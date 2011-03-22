@@ -1,0 +1,358 @@
+[0:Overmind19] INFO - Overmind online.
+[0:Overmind19] INFO - Strategy: assignment0.MineMineMine@1bf7b23
+[1559:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1560:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1561:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1562:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1563:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1564:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1565:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1566:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1567:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1568:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1569:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1570:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1571:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1572:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1573:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1574:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1575:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1576:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1577:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1578:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1579:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1580:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1581:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1582:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1583:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1584:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1585:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1586:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1587:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1588:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1589:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1590:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1591:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1592:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1593:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1594:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1595:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1596:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1597:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1598:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1599:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1600:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1601:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1602:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame(MineMineMine.java:72)
+	at edu.berkeley.nlp.starcraft.overmind.Overmind.onFrame(Overmind.java:106)
+	at org.bwapi.proxy.ProxyServer.runGame(ProxyServer.java:180)
+	at org.bwapi.proxy.ProxyServer.run(ProxyServer.java:76)
+	at assignment0.MineMineMine.main(MineMineMine.java:167)
+[1603:Overmind16] FATAL - Exception in onFrame of cerebrate assignment0.MineMineMine@1bf7b23
+java.lang.RuntimeException: Invalid train command on Unit [Resource Mineral Field 36]
+	at org.bwapi.proxy.model.Unit.train(Unit.java:435)
+	at assignment0.MineMineMine.onFrame

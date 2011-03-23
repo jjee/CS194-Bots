@@ -99,6 +99,12 @@ public class TwoGateRush extends EmptyFixedBot {
 	}
 	
 	public void attack(){
+		List<ROUnit> roZealots = UnitUtils.getAllMy(UnitType.getUnitType(zealot));
+		myZealots.clear();
+		for(ROUnit r: roZealots){
+			myZealots.add(UnitUtils.assumeControl(r));
+		}
+		
 		int idleCount = 0;
 		for(Unit z: myZealots){
 			if(z.isIdle())
@@ -314,6 +320,14 @@ public class TwoGateRush extends EmptyFixedBot {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public void onUnitDestroy(ROUnit unit){
+		if(unit.getPlayer().equals(Game.getInstance().self())){
+			Unit u = UnitUtils.assumeControl(unit);
+			
+		}
 	}
 }
 

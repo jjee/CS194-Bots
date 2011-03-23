@@ -4,12 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
-import org.bwapi.proxy.ProxyBot;
-import org.bwapi.proxy.ProxyBotFactory;
-import org.bwapi.proxy.ProxyServer;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Order;
 import org.bwapi.proxy.model.Position;
@@ -20,7 +16,6 @@ import org.bwapi.proxy.model.Unit;
 import org.bwapi.proxy.model.UnitType;
 import org.bwapi.proxy.model.UpgradeType;
 
-import edu.berkeley.nlp.starcraft.overmind.Overmind;
 import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
 
@@ -276,25 +271,6 @@ public class LurkerDrop extends EmptyFixedBot{
 				buildOrder.add(0,new BuildCommand(overlord));
 				buildOvie = true;
 			}
-		}else if(t.equals(UnitType.getUnitType(extractor))){
-			if(getMinerals() >= t.mineralPrice())
-				return false;
-			Set<ROUnit> geysers = myMap.getGasSpots();
-			ArrayList<Unit> geyserList = new ArrayList<Unit>();
-			//Unit morpher = (Unit)findClosest(drones,area);
-			Unit morpher = drones.get(0);
-			ROUnit closestPatch = UnitUtils.getClosest(drones.get(0), Game.getInstance().getGeysers());
-			if (closestPatch != null) {
-				drones.get(0).build(closestPatch.getTilePosition(), UnitType.getUnitType("Zerg Extractor"));
-			}else
-				return false;
-			//System.out.println(geyser);
-			//morpher.build(geyser.getTilePosition(), t);
-			//drones.remove(2);
-			lastBuilder = morpher;
-			buildLock = true;
-			System.out.println("Building extractor");
-			return true;
 		}else if(t.equals(UnitType.getUnitType(lurker))){
 			if(lurkTech&&!hydraDen.isResearching()&&getMinerals() >= t.mineralPrice() && getSupply() >= 1
 					&& Game.getInstance().self().gas() >= t.gasPrice() && !hydras.isEmpty()){
@@ -322,17 +298,9 @@ public class LurkerDrop extends EmptyFixedBot{
 	
 	public TilePosition findBuildRadius(TilePosition c, int radius, Unit u, UnitType t){
 		TilePosition tp;
-		TilePosition next;
-		TilePosition prev;
-		TilePosition top;
-		TilePosition bottom;
 		for(int y = -radius; y <= radius; y+=1){
 			for(int x = -radius; x <= radius; x+=1){
 				tp = new TilePosition(c.x()+x,c.y()+y);
-				next = new TilePosition(c.x()+x+2,c.y()+y);
-				prev = new TilePosition(c.x()+x-2,c.y()+y);
-				top = new TilePosition(c.x()+x,c.y()+y+2);
-				bottom = new TilePosition(c.x()+x,c.y()+y-2);
 				if(u.canBuildHere(tp, t))
 					return tp;
 			}
@@ -342,7 +310,6 @@ public class LurkerDrop extends EmptyFixedBot{
 	
 	@Override
 	public void setUpBuildOrder() {
-		// TODO Auto-generated method stub
 		for(int i = 0; i < 5; i++) {
 			buildOrder.add(new BuildCommand(drone));
 		}

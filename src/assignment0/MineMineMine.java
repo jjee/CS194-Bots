@@ -3,11 +3,6 @@ package assignment0;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
-
-import org.bwapi.proxy.ProxyBot;
-import org.bwapi.proxy.ProxyBotFactory;
-import org.bwapi.proxy.ProxyServer;
 import org.bwapi.proxy.model.Color;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Player;
@@ -20,7 +15,6 @@ import org.bwapi.proxy.model.UnitType;
 import edu.berkeley.nlp.starcraft.AbstractCerebrate;
 import edu.berkeley.nlp.starcraft.Cerebrate;
 import edu.berkeley.nlp.starcraft.Strategy;
-import edu.berkeley.nlp.starcraft.overmind.Overmind;
 import edu.berkeley.nlp.starcraft.scripting.Command;
 import edu.berkeley.nlp.starcraft.scripting.JythonInterpreter;
 import edu.berkeley.nlp.starcraft.scripting.Thunk;
@@ -35,7 +29,7 @@ public class MineMineMine extends AbstractCerebrate implements Strategy {
 	private List<Unit> attackers = new ArrayList<Unit>();
 	private Unit myBuilder;
 	private TilePosition buildPos;
-	private List<Unit> gateways = new ArrayList<Unit>();
+	//private List<Unit> gateways = new ArrayList<Unit>();
 	private Player mySelf;
 	private int pylons;
 	private int off;

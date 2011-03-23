@@ -4,28 +4,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
-import org.bwapi.proxy.ProxyBot;
-import org.bwapi.proxy.ProxyBotFactory;
-import org.bwapi.proxy.ProxyServer;
-import org.bwapi.proxy.model.Color;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Order;
-import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
 import org.bwapi.proxy.model.UnitType;
 
-import edu.berkeley.nlp.starcraft.AbstractCerebrate;
 import edu.berkeley.nlp.starcraft.Cerebrate;
-import edu.berkeley.nlp.starcraft.Strategy;
-import edu.berkeley.nlp.starcraft.overmind.Overmind;
-import edu.berkeley.nlp.starcraft.scripting.Command;
 import edu.berkeley.nlp.starcraft.scripting.JythonInterpreter;
-import edu.berkeley.nlp.starcraft.scripting.Thunk;
 import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
 public class TwoGateRush extends EmptyFixedBot {

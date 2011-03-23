@@ -43,6 +43,7 @@ public class LurkerDrop extends EmptyFixedBot{
 	String ovieSpeed = "Zerg Overlord Speed Upgrade";
 	
 	boolean buildLock = false;
+	boolean buildComplete = false;
 	List<BuildCommand> buildOrder = new ArrayList<BuildCommand>();
 	Unit lastBuilder = null;
 	BuildCommand lastOrder = null;
@@ -130,24 +131,96 @@ public class LurkerDrop extends EmptyFixedBot{
 				buildOrder.add(0,lastOrder);
 			}
 		}
-		if(buildOrder.size() < 5)
-			buildContinue();
-		System.out.println(buildOrder.get(0));
+		if(buildOrder.size() == 0)
+			buildComplete = true;
+		//System.out.println(buildOrder.get(0));
 	}
 	
 	public void buildContinue(){
-		if(getSupply() < 2 && !buildOrder.contains(new BuildCommand(overlord))){
-			buildOrder.add(new BuildCommand(overlord));
+		if(!buildLock){
+			//is there a spawning pool?
+			boolean buildSpawnPool = (spawnPool == null);
+			//is there a hydraden?
+			boolean buildHydraDen = (hydraDen == null);
+			//enough supply?
+			int supplyNeeded = 4*bases.size() - getSupply();
+			int oviesWillHave = 0;
+			for(ROUnit u: ovies){
+				if(u.isMorphing())
+					oviesWillHave++;
+				else if(u.getType().equals(UnitType.getUnitType(larva)))
+					oviesWillHave++;	
+			}
+			boolean needSupply = false;
+			if(oviesWillHave*16 < supplyNeeded)
+				needSupply = true;
+			//enough drones?
+			boolean needDrones = (drones.size() < 15);
+			for(Unit l: larvae){
+				if(l.isMorphing())
+					needDrones = false;
+			}
+			//enough hydralisks?
+			boolean needHydras = (hydras.size() < 2);
+			//enough lurkers?
+			boolean needLurkers = (lurkers.size() < 8);
+			//enough zerglings?
+			boolean needLings = canBuild(zergling);
+			boolean needHatch = getMinerals() > 1000;
+			for(Unit l: larvae){
+				if(!l.isMorphing())
+					needHatch = false;
+			}
+			for(Unit h: bases){
+				if(h.isMorphing())
+					needHatch = false;
+			}
+			if(needDrones){
+				createUnit(UnitType.getUnitType(drone),null);
+			}else if(buildSpawnPool){
+				createUnit(UnitType.getUnitType(spawningPool),null);
+			}else if(buildHydraDen){
+				createUnit(UnitType.getUnitType(den),null);
+			}else if(needSupply){
+				createUnit(UnitType.getUnitType(overlord),null);
+			}else if(needHatch){
+				createUnit(UnitType.getUnitType(hatchery),null);
+			}else{
+				if(needHydras && canBuild(hydralisk)){
+					createUnit(UnitType.getUnitType(hydralisk),null);
+				}else if(needLurkers && canBuild(lurker)){
+					createUnit(UnitType.getUnitType(lurker),null);
+				}else if(needLings){
+					createUnit(UnitType.getUnitType(zergling),null);
+				}
+			}
+		}else if(buildLock){
+			//check to see if builder still actually going to build 
+			if(lastBuilder.getOrder().equals(Order.MINING_MINERALS)||
+					lastBuilder.getOrder().equals(Order.MOVE_TO_GAS)||
+					lastBuilder.getOrder().equals(Order.MOVE_TO_MINERALS)||
+					lastBuilder.getOrder().equals(Order.GUARD)||
+					lastBuilder.isGatheringGas()||
+					lastBuilder.isGatheringMinerals()||lastBuilder.isIdle()){
+				buildLock = false;
+				drones.add(lastBuilder);
+			}
 		}
-		if(drones.size() < 15)
-			buildOrder.add(new BuildCommand(drone));
-		
-		buildOrder.add(new BuildCommand(lurker));
-		
-		if(getSupply() > 9 && getMinerals() > 300 && Game.getInstance().self().gas() < 200)
-			buildOrder.add(new BuildCommand(zergling));
 	}
 	
+	public boolean canBuild(String name){
+		UnitType t = UnitType.getUnitType(name);
+		if(!t.isBuilding()&&!t.equals(UnitType.getUnitType(overlord))){
+			if(getSupply() < t.supplyRequired())
+				return false;
+		}
+		if(t.gasPrice() > Game.getInstance().self().gas())
+			return false;
+		if(t.mineralPrice() > getMinerals())
+			return false;
+		
+		return true;
+	}
 	public boolean createUnit(UnitType t, TilePosition area){
 		if(area==null){
 			area = bases.get(0).getTilePosition();
@@ -167,7 +240,7 @@ public class LurkerDrop extends EmptyFixedBot{
 			if(getMinerals() >= t.mineralPrice() && Game.getInstance().self().gas() >= t.gasPrice()&& !drones.isEmpty()){
 				Unit morpher = (Unit)findClosest(drones,area);
 				TilePosition tp;
-				for(int i = 8; i < 15; i++){
+				for(int i = 4; i < 30; i++){
 					tp = findBuildRadius(area,i,morpher,t);
 					if(tp!=null){
 						morpher.build(tp,t);
@@ -185,7 +258,7 @@ public class LurkerDrop extends EmptyFixedBot{
 					&& Game.getInstance().self().gas() >= t.gasPrice() && !larvae.isEmpty()){
 				Unit morpher = (Unit)findClosest(larvae,area);
 				if(t.equals(UnitType.getUnitType(zergling)) && (spawnPool==null ||!spawnPool.isCompleted())){
-					if(spawnPool == null)
+					if(spawnPool == null && !buildOrder.contains(new BuildCommand(spawningPool)))
 						buildOrder.add(0,new BuildCommand(spawningPool));
 					return false;
 				}
@@ -282,7 +355,6 @@ public class LurkerDrop extends EmptyFixedBot{
 		buildOrder.add(new BuildCommand(zergling));
 		buildOrder.add(new BuildCommand(zergling));
 		buildOrder.add(new BuildCommand(zergling));
-		//buildOrder.add(new BuildCommand(lingSpeed));
 		buildOrder.add(new BuildCommand(drone));
 		buildOrder.add(new BuildCommand(lair));
 		buildOrder.add(new BuildCommand(overlord));
@@ -293,19 +365,15 @@ public class LurkerDrop extends EmptyFixedBot{
 		buildOrder.add(new BuildCommand(drop));
 		buildOrder.add(new BuildCommand(den));
 		buildOrder.add(new BuildCommand(lurker_up));
-		//buildOrder.add(new BuildCommand(ovieSpeed));
 		buildOrder.add(new BuildCommand(hydralisk));
 		buildOrder.add(new BuildCommand(hydralisk));
-		//buildOrder.add(new BuildCommand(overlord));
 		buildOrder.add(new BuildCommand(drone));
 		buildOrder.add(new BuildCommand(drone));
-		//buildOrder.add(new BuildCommand(drone));
 		for(int i = 0; i<2; i++){
 			buildOrder.add(new BuildCommand(lurker));
 		}
 		buildOrder.add(new BuildCommand(ovieSpeed));
-		
-		//buildOrder.add(new BuildCommand(extractor));
+		//buildOrder.add(new BuildCommand(lingSpeed));
 	}
 	
 	@Override
@@ -317,7 +385,10 @@ public class LurkerDrop extends EmptyFixedBot{
 			  	}
 		} 
 		gasFrame();
-		buildNext();
+		if(!buildComplete)
+			buildNext();
+		else
+			buildContinue();
 		attack();
 		if(toScout)
 			scout();
@@ -357,7 +428,7 @@ public class LurkerDrop extends EmptyFixedBot{
 			if(u.isIdle())
 				zerglingCount++;
 		}
-		if(zerglingCount == 12){
+		if(zerglingCount >= 12){
 			for(Unit u: lings){
 				if(u.isIdle()){
 					TilePosition tp = getTarget(u);
@@ -535,20 +606,28 @@ public class LurkerDrop extends EmptyFixedBot{
 			bases.add(u);
 		//if(u.getType().equals(UnitType.getUnitType(larva)))
 			//larvae.add(u);
-		if(u.getType().equals(UnitType.getUnitType(drone)))
+		if(u.getType().equals(UnitType.getUnitType(drone))){
 			drones.add(u);
+			larvae.remove(u);
+		}
 		if(u.getType().equals(UnitType.getUnitType(overlord))) {
 			//ovies.add(u);
+			larvae.remove(u);
 			buildOvie = false;
 		}
-		if(u.getType().equals(UnitType.getUnitType(zergling)))
+		if(u.getType().equals(UnitType.getUnitType(zergling))){
 			lings.add(u);
-		if(u.getType().equals(UnitType.getUnitType(hydralisk)))
+			larvae.remove(u);
+		}
+		if(u.getType().equals(UnitType.getUnitType(hydralisk))){
+			larvae.remove(u);
 			hydras.add(u);
+		}
 		if(u.getType().equals(UnitType.getUnitType(lurker))) {
 			if(lurkers.size() < 3)
 				defenders.add(u);
 			lurkers.add(u);
+			hydras.remove(u);
 		}
 		if(u.getType().equals(UnitType.getUnitType(spawningPool)))
 			spawnPool = u;
@@ -574,7 +653,8 @@ public class LurkerDrop extends EmptyFixedBot{
 			drones.remove(u);
 		if(u.getType().equals(UnitType.getUnitType(overlord))){
 			ovies.remove(u);
-			if(!buildOrder.get(0).order.equals(overlord ) || getSupply() < 2)
+			if(!buildOrder.isEmpty()&&
+					(!buildOrder.get(0).order.equals(overlord ) || getSupply() < 2))
 				buildOrder.add(0,new BuildCommand(overlord));
 		}
 		if(u.getType().equals(UnitType.getUnitType(zergling)))

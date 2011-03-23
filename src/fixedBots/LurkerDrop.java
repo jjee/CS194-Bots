@@ -54,6 +54,7 @@ public class LurkerDrop extends EmptyFixedBot{
 	List<Unit> hydras = new ArrayList<Unit>();
 	List<Unit> lurkers = new ArrayList<Unit>();
 	List<Unit> defenders = new ArrayList<Unit>();
+	List<ROUnit> enemyUnits = new ArrayList<ROUnit>();
 	Unit spawnPool;
 	Unit hydraDen;
 	Unit extractDrone;
@@ -183,8 +184,11 @@ public class LurkerDrop extends EmptyFixedBot{
 			if(getMinerals() >= t.mineralPrice() && (getSupply() >= t.supplyRequired() || t.equals(UnitType.getUnitType(overlord)))
 					&& Game.getInstance().self().gas() >= t.gasPrice() && !larvae.isEmpty()){
 				Unit morpher = (Unit)findClosest(larvae,area);
-				if(t.equals(UnitType.getUnitType(zergling)) && (spawnPool==null ||!spawnPool.isCompleted()))
+				if(t.equals(UnitType.getUnitType(zergling)) && (spawnPool==null ||!spawnPool.isCompleted())){
+					if(spawnPool == null)
+						buildOrder.add(0,new BuildCommand(spawningPool));
 					return false;
+				}
 				if(t.equals(UnitType.getUnitType(hydralisk)) && (hydraDen==null ||!hydraDen.isCompleted()))
 					return false;
 				if(t.equals(UnitType.getUnitType(overlord))){
@@ -367,9 +371,9 @@ public class LurkerDrop extends EmptyFixedBot{
 				u.burrow();
 		}
 		for(Unit u: lurkers) {
-			if(!u.isBurrowed() && close(enemyUnits(),u.getTilePosition()))
+			if(!u.isBurrowed() && close(enemyUnits,u.getTilePosition()))
 				u.burrow();
-			else if(!defenders.contains(u) && u.isBurrowed() && !close(enemyUnits(),u.getTilePosition()))
+			else if(!defenders.contains(u) && u.isBurrowed() && !close(enemyUnits,u.getTilePosition()))
 				u.unburrow();
 		}
 		Unit mover = null;
@@ -477,8 +481,14 @@ public class LurkerDrop extends EmptyFixedBot{
 	
 	@Override
 	public void onUnitShow(ROUnit unit){
+		
+	
 		if(unit.getType().isBuilding()){
 			myMap.addBuilding(unit);
+		}
+		if(Game.getInstance().self().isEnemy(unit.getPlayer())){
+			enemyUnits.add(unit);
+			return;
 		}
 		if(unit.getType().equals(UnitType.getUnitType(overlord))) {
 			buildOvie = false;
@@ -551,8 +561,10 @@ public class LurkerDrop extends EmptyFixedBot{
 	@Override
 	public void onUnitDestroy(ROUnit unit) {
 		super.onUnitDestroy(unit);
-		if(Game.getInstance().self().isEnemy(unit.getPlayer()))
+		if(Game.getInstance().self().isEnemy(unit.getPlayer())){
+			enemyUnits.remove(unit);
 			return;
+		}
 		Unit u = UnitUtils.assumeControl(unit);
 		if(u.getType().equals(UnitType.getUnitType(hatchery)))
 			bases.remove(u);

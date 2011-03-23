@@ -151,8 +151,10 @@ public class TwoGateRush extends EmptyFixedBot {
 		if(buildOrder.isEmpty()){
 			buildComplete = true;
 		}
+		
 		if(holdOrders&&workers.get(0).getOrder().equals(Order.MINING_MINERALS)){
 			holdOrders = false;
+			buildOrder.add(0,lastOrder);
 		}
 	}
 	

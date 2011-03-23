@@ -58,6 +58,11 @@ public class TwoGateRush extends EmptyFixedBot {
 
 	@Override
   public void onFrame() {
+		List<ROUnit> roWorkers = UnitUtils.getAllMy(UnitType.getUnitType(probe));
+		workers.clear();
+		for(ROUnit r: roWorkers){
+			workers.add(UnitUtils.assumeControl(r));
+		}
 	  for(Unit u: workers) {
 	  	if(u.isIdle()) {
 	  		ROUnit closestPatch = UnitUtils.getClosest(u, Game.getInstance().getMinerals());
@@ -107,7 +112,7 @@ public class TwoGateRush extends EmptyFixedBot {
 		
 		int idleCount = 0;
 		for(Unit z: myZealots){
-			if(z.isIdle())
+			if(z.isIdle()&&!z.isBeingConstructed())
 				idleCount++;
 		}
 		
@@ -145,8 +150,10 @@ public class TwoGateRush extends EmptyFixedBot {
 			if(!g.isBeingConstructed())
 				everyGatewayInUse = !g.getTrainingQueue().isEmpty();
 		}
-		if(everyGatewayInUse && getMinerals() > myGateways.size()*50 + 150 && !buildOrder.contains(gateway)&&!holdOrders)
+		if(everyGatewayInUse && getMinerals() > myGateways.size()*100 + 150 && !buildOrder.contains(gateway)&&!holdOrders){			
 			buildOrder.add(gateway);
+			holdOrders = true;
+		}
 		
 		if(holdOrders&&workers.get(0).getOrder().equals(Order.MINING_MINERALS)){
 			holdOrders = false;
@@ -265,7 +272,7 @@ public class TwoGateRush extends EmptyFixedBot {
 	
 	@Override
 	public void onUnitShow(ROUnit unit){
-		super.onUnitCreate(unit);
+		
 		if(unit.getType().isBuilding()){
 			myMap.addBuilding(unit);
 		}
@@ -320,14 +327,6 @@ public class TwoGateRush extends EmptyFixedBot {
 			}
 		}
 		return null;
-	}
-	
-	@Override
-	public void onUnitDestroy(ROUnit unit){
-		if(unit.getPlayer().equals(Game.getInstance().self())){
-			Unit u = UnitUtils.assumeControl(unit);
-			
-		}
 	}
 }
 

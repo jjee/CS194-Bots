@@ -1,6 +1,7 @@
 package fixedBots;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -63,6 +64,7 @@ public class LurkerDrop extends EmptyFixedBot{
 	private Unit scout;
 	private TilePosition scoutTarget;
 	private boolean buildOvie = false;
+	private HashMap<Unit, Boolean> boundaries = new HashMap<Unit, Boolean>();
 	
 	boolean dropTech;
 	boolean lurkTech;
@@ -390,8 +392,23 @@ public class LurkerDrop extends EmptyFixedBot{
 				m.unloadAll();
 				System.out.println("unloading");
 			}*/
-			if(m.isIdle()&&m.getLoadedUnits().size()>0){
-				
+			if(m.getLoadedUnits().size() == 0 && m.isIdle())
+				boundaries.put(m, false);
+			if(m.isIdle() && m.getLoadedUnits().size()>0 && !boundaries.get(m) && getTarget(m) != null) {
+				TilePosition t = getTarget(m);
+				int tx=t.x();
+				int x,y=m.getLastKnownTilePosition().y();
+				if(tx>myMap.getWidth()/2)
+					x = myMap.getWidth()-3;
+				else
+					x = 3;
+				TilePosition b = new TilePosition(x,y);
+				if(close(m.getLastKnownTilePosition(),b))
+					boundaries.put(m, true);
+				else
+					m.move(b);
+			}
+			else if(m.isIdle()&&m.getLoadedUnits().size()>0){
 				TilePosition t = getTarget(m);
 				if(t==null)
 					t = new TilePosition((int)(Math.random()*myMap.getWidth()),(int)(Math.random()*myMap.getHeight()));
@@ -564,8 +581,8 @@ public class LurkerDrop extends EmptyFixedBot{
 		}
 			
 	}
-	
-/*	public static void main(String[] args) {
+	/*
+	public static void main(String[] args) {
 		ProxyBotFactory factory = new ProxyBotFactory() {
 
 			@Override
@@ -576,6 +593,6 @@ public class LurkerDrop extends EmptyFixedBot{
 		};
 		new ProxyServer(factory, ProxyServer.extractPort(args.length> 0 ? args[0] : null)).run();
 
-	}*/
-
+	}
+	*/
 }

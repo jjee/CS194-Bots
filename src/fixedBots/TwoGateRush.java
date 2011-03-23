@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Order;
+import org.bwapi.proxy.model.Player;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
@@ -27,6 +28,7 @@ public class TwoGateRush extends EmptyFixedBot {
 	private List<String> buildOrder;
 	private TilePosition myHome;
 	private TilePosition scoutTarget;
+	private Set<ROUnit> searched = new HashSet<ROUnit>();
 	
 	private Unit scout;
 	
@@ -36,6 +38,8 @@ public class TwoGateRush extends EmptyFixedBot {
 	String pylon = "Protoss Pylon";
 	String zealot = "Protoss Zealot";
 	String gateway = "Protoss Gateway";
+	
+	private boolean buildComplete = false;
 	
 	
 	@Override
@@ -107,49 +111,87 @@ public class TwoGateRush extends EmptyFixedBot {
 		
 		if(idleCount >=10){
 			ROUnit target = null;
+			Player me = Game.getInstance().self();
 			for(ROUnit b: myMap.getBuildings()){
-				if(Game.getInstance().self().isEnemy(b.getPlayer())){
+				if(me.isEnemy(b.getPlayer())){
 					target = b;
 					break;
 				}
 			}
+			if(target==null){
+				for(ROUnit t: myMap.getGasSpots()){
+					if(!searched.contains(target)&&
+							!me.canSeeUnitAtPosition(UnitType.getUnitType(probe),t.getLastKnownPosition())){
+						target = t;
+					}
+				}
+				if(target!=null)
+					searched.add(target);
+			}
 			if(target!=null){
 				for(Unit z: myZealots){
-					z.attackMove(target.getLastKnownPosition());
+					if(z.isIdle())
+						z.attackMove(target.getLastKnownPosition());
 				}
+			}else{
+				searched.clear();
 			}
 		}
 	}
 	
 	public void buildNext(){
-		if(!buildOrder.isEmpty()&&!holdOrders){
+		if(!buildComplete&&!buildOrder.isEmpty()&&!holdOrders){
 			if(createUnit(buildOrder.get(0))){
 				lastOrder = buildOrder.remove(0);
 			}
+		}else if(buildComplete){
+			buildContinue();
 		}
 		
-		if(buildOrder.size()<5&&!holdOrders){
-				buildOrder.add(zealot);
-				if(workers.size()<20)
-					buildOrder.add(probe);
+		if(buildOrder.isEmpty()){
+			buildComplete = true;
 		}
-		
-		boolean everyGatewayInUse = false;
-		for(Unit g: myGateways){
-			if(!g.isBeingConstructed())
-				everyGatewayInUse = !g.getTrainingQueue().isEmpty();
-		}
-		if(everyGatewayInUse && getMinerals() > myGateways.size()*100 + 150 && !buildOrder.contains(gateway)&&!holdOrders){			
-			buildOrder.add(gateway);
-			holdOrders = true;
-		}
-		
-		if(holdOrders&&workers.get(0).getOrder().equals(Order.MINING_MINERALS)){
-			holdOrders = false;
-			buildOrder.add(0,lastOrder);
-	}
 	}
 	
+	public void buildContinue(){
+		if(!holdOrders){
+			List<ROUnit> pylons = UnitUtils.getAllMy(UnitType.getUnitType(pylon)); 
+			int pylonCount = 0;
+			for(ROUnit p: pylons){
+				if(p.isBeingConstructed())
+					pylonCount++;
+			}
+			boolean needSupply = getSupply()+pylonCount*16 < 4*myGateways.size();
+			boolean needProbes = workers.size() < 12;
+			List<ROUnit> bases = UnitUtils.getAllMy(UnitType.getUnitType("Protoss Nexus"));
+			for(ROUnit b: bases){
+				if(!b.getTrainingQueue().isEmpty())
+					needProbes = false;
+			}
+			boolean newGateway = getMinerals() > myGateways.size()*100+150;
+			boolean everyGatewayInUse = false;
+			for(Unit g: myGateways){
+				if(!g.isBeingConstructed())
+					everyGatewayInUse = !g.getTrainingQueue().isEmpty();
+			}
+			
+			newGateway = everyGatewayInUse && newGateway;
+			
+			if(needSupply){
+				createUnit(pylon);
+			}else if(needProbes){
+				createUnit(probe);
+			}else if(newGateway){
+				createUnit(gateway);
+			}else{
+				createUnit(zealot);
+			}
+		}else{
+			if(workers.get(0).getOrder().equals(Order.MINING_MINERALS)){
+				holdOrders = false;
+			}
+		}
+	}
 	
 	public boolean createUnit(String name){
 		Unit u = null;
@@ -187,7 +229,7 @@ public class TwoGateRush extends EmptyFixedBot {
 				return false;
 			}
 		}else if(name.equals("Protoss Zealot")){
-			if(getSupply()<=3){
+			if(getSupply()<=4*myGateways.size()){
 				boolean needPylon = true;
 				for(Unit p: myPylons){
 					if(p.isBeingConstructed())
@@ -226,7 +268,7 @@ public class TwoGateRush extends EmptyFixedBot {
 	}
 
 	@Override
-  public void onStart() {
+	public void onStart() {
 		super.onStart();
 		
 		myGateways = new ArrayList<Unit>();
@@ -241,7 +283,7 @@ public class TwoGateRush extends EmptyFixedBot {
 	
 
 	@Override
-  public void onUnitCreate(ROUnit unit) {
+	public void onUnitCreate(ROUnit unit) {
 		if(unit.getType().getName().equals("Protoss Probe"))
 			workers.add(UnitUtils.assumeControl(unit));
 		

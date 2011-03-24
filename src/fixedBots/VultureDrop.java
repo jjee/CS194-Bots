@@ -116,11 +116,11 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			sparkySteps++;
 			if (sparkySteps == 100)
 				rallyPoints.add(sparky.getPosition());
-			if (sparkySteps == 130)
-				rallyPoints.add(sparky.getPosition());
 			if (sparkySteps == 170)
 				rallyPoints.add(sparky.getPosition());
 			if (sparkySteps == 200)
+				rallyPoints.add(sparky.getPosition());
+			if (sparkySteps == 220)
 				rallyPoints.add(sparky.getPosition());
 		}
 		
@@ -293,7 +293,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		//Vultures attack
 		for (Unit v: vultures.keySet()) {
 			if (vultures.get(v) == 1) {
-				if (v.getSpiderMineCount() > 0 && v.isIdle()) {
+				if (v.getSpiderMineCount() > 0 && v.isIdle() && rand.nextDouble() < 0.5) {
 					v.useTech(TechType.SPIDER_MINES, v.getPosition());
 				}
 				else if (v.isIdle()) {
@@ -340,7 +340,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			else if (dropships.get(d) == 1 && d.isIdle()) {
 				d.move(intermediary);
 			}
-			if (dropships.get(d) == 1 && (d.getDistance(intermediary) < 400) || d.getDistance(target) < 300) {
+			if (dropships.get(d) == 1 && (d.getDistance(intermediary) < 400) || d.getDistance(target) < 200) {
 				dropships.put(d, 2);
 				d.stop();
 			}
@@ -348,16 +348,18 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			if (dropships.get(d) == 2 && d.isIdle()) {
 				d.move(target);
 			}
-			if (dropships.get(d) == 2 && d.getDistance(target) < 300) {
+			if (dropships.get(d) == 2 && d.getDistance(target) < 200) {
 				ROUnit closestPatch = UnitUtils.getClosest(target, Game.getInstance().getMinerals());
-				d.unloadAll(closestPatch.getPosition().add(rand.nextInt(100)-50, rand.nextInt(100)-50));
+				d.unloadAll(closestPatch.getPosition().add(rand.nextInt(200)-100, rand.nextInt(200)-100));
 				for (ROUnit vulture : d.getLoadedUnits()) {
 					vultures.put((Unit) vulture, 1);
 				}
 				dropships.put(d, 3);
 			}			
-			if (dropships.get(d) == 3 && d.getLoadedUnits().size() == 0)
+			if (dropships.get(d) == 3 && d.getLoadedUnits().size() == 0) {
 				dropships.put(d, 0);
+				d.stop();
+			}
 		}		
 	}
 	
@@ -365,7 +367,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		  if (toScout)
 			  scout();
 		  else
-			  workers.put(sparky, 0);
+			  cheese();
 		  
 		  //Make sure have enough supply depots
 		  if (me.supplyUsed() >= me.supplyTotal()-5)
@@ -407,17 +409,9 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 				  UnitUtils.assumeControl(u).train(UnitType.TERRAN_MARINE);
 			  }
 		  }
-		  for (ROUnit u: UnitUtils.getAllMy(UnitType.TERRAN_MARINE)) {
-			  if (u.getDistance(rallyPoints.get(2)) > 500 || (u.isIdle() && u.getDistance(rallyPoints.get(2)) > 100))
-				  UnitUtils.assumeControl(u).attackMove(rallyPoints.get(2));
-		  }
-		  for (ROUnit b: UnitUtils.getAllMy(UnitType.TERRAN_BUNKER)) {
-			  if (b.getLoadedUnits().size() < 4) {
-				  for (ROUnit m: UnitUtils.getAllMy(UnitType.TERRAN_MARINE))
-					  UnitUtils.assumeControl(b).load(m);
-			  }
-		  }
 		  
+		  //Rally vultures
+		  int numAttacking = 0;
 		  for (ROUnit v: UnitUtils.getAllMy(UnitType.TERRAN_VULTURE)) {
 			  if (vultures.get(v) == 0) {
 				  if (v.getSpiderMineCount() > 2 && v.isIdle()) {
@@ -425,8 +419,30 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 					  int y = rand.nextInt(60)-30;
 					  UnitUtils.assumeControl(v).useTech(TechType.SPIDER_MINES, rallyPoints.get(3).add(x, y));
 				  }
-				  else if (v.getDistance(rallyPoints.get(0)) > 500 || (v.isIdle() && v.getDistance(rallyPoints.get(0)) > 100))
-					  UnitUtils.assumeControl(v).attackMove(rallyPoints.get(0));
+				  else if (v.getDistance(rallyPoints.get(0)) > 500 || (v.isIdle() && v.getDistance(rallyPoints.get(0)) > 100)) {
+					  if (numAttacking >= 6 && enemyBuildings.size() != 0)
+						  UnitUtils.assumeControl(v).attackMove(enemyBuildings.get(0).getLastKnownPosition());
+					  else
+						  UnitUtils.assumeControl(v).attackMove(rallyPoints.get(0));
+				  }
+			  }
+			  else if (vultures.get(v) == 1)
+				  numAttacking++;
+		  }
+		  
+		  //Rally marines
+		  for (ROUnit u: UnitUtils.getAllMy(UnitType.TERRAN_MARINE)) {
+			  if (u.getDistance(rallyPoints.get(2)) > 500 || (u.isIdle() && u.getDistance(rallyPoints.get(2)) > 100)) {
+				  if (numAttacking >= 6 && enemyBuildings.size() != 0)
+					  UnitUtils.assumeControl(u).attackMove(enemyBuildings.get(0).getLastKnownPosition());
+				  else
+					  UnitUtils.assumeControl(u).attackMove(rallyPoints.get(2));
+			  }
+		  }
+		  for (ROUnit b: UnitUtils.getAllMy(UnitType.TERRAN_BUNKER)) {
+			  if (b.getLoadedUnits().size() < 4) {
+				  for (ROUnit m: UnitUtils.getAllMy(UnitType.TERRAN_MARINE))
+					  UnitUtils.assumeControl(b).load(m);
 			  }
 		  }
 		  

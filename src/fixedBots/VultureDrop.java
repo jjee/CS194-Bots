@@ -187,6 +187,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		//Factory
 		if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() < 1) {
 			  placeAndBuild("Terran Factory");
+//			  System.out.println("factory");
 		}
 		for (ROUnit f : UnitUtils.getAllMy(UnitType.TERRAN_FACTORY)) {
 			UnitUtils.assumeControl(f).buildAddon(UnitType.TERRAN_MACHINE_SHOP);
@@ -203,6 +204,25 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			}
 		}
 	  
+		//Bunker
+		if (UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size() > 0 && UnitUtils.getAllMy(UnitType.TERRAN_BUNKER).size() < 2) {
+			Unit builder = null;
+			int numBuilders = 2;
+			for (Unit w : workers.keySet()) {
+				if (workers.get(w) == 0 && !w.isConstructing()) {
+					builder = w;
+					break;
+				}
+				if (--numBuilders <= 0)
+					break;
+			}
+			if (builder != null) {
+				int x = rand.nextInt(8)-4;
+				int y = rand.nextInt(8)-4;
+				builder.build((new TilePosition(rallyPoints.get(1))).add(x, y), UnitType.TERRAN_BUNKER);
+			}
+		}
+		
 		//Barracks
 		if (UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size() == 0) {
 			placeAndBuild("Terran Barracks");
@@ -313,8 +333,8 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 	  public void onFrame() {
 		  if (toScout)
 			  scout();
-//		  else
-//			  cheese();
+		  else
+			  cheese();
 		  
 		  //Make sure have enough supply depots
 		  if (me.supplyUsed() >= me.supplyTotal()-5)
@@ -357,8 +377,14 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			  }
 		  }
 		  for (ROUnit u: UnitUtils.getAllMy(UnitType.TERRAN_MARINE)) {
-			  if (u.getDistance(rallyPoints.get(1)) > 500 || (u.isIdle() && u.getDistance(rallyPoints.get(1)) > 100))
-				  UnitUtils.assumeControl(u).attackMove(rallyPoints.get(1));
+			  if (u.getDistance(rallyPoints.get(2)) > 500 || (u.isIdle() && u.getDistance(rallyPoints.get(2)) > 100))
+				  UnitUtils.assumeControl(u).attackMove(rallyPoints.get(2));
+		  }
+		  for (ROUnit b: UnitUtils.getAllMy(UnitType.TERRAN_BUNKER)) {
+			  if (b.getLoadedUnits().size() < 4) {
+				  for (ROUnit m: UnitUtils.getAllMy(UnitType.TERRAN_MARINE))
+					  UnitUtils.assumeControl(b).load(m);
+			  }
 		  }
 		  
 		  for (ROUnit u: UnitUtils.getAllMy(UnitType.TERRAN_VULTURE)) {

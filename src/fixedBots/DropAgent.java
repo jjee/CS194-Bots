@@ -14,6 +14,7 @@ public class DropAgent {
 	private double[][] threatGrid; //shared with rest of units
 	private boolean drop = false;
 	private TilePosition myHome, myTarget;
+	private int steps;
 	
 	public DropAgent(Unit dropUnit, double[][] threatGrid){
 		me = dropUnit;
@@ -28,6 +29,17 @@ public class DropAgent {
 	public Unit passenger(){ return passenger;}
 	
 	public boolean getStatus(){ return drop;}
+	public int getSteps(){return steps;}
+	
+	public boolean load(Unit target){
+		if(me.getLoadedUnits().contains(target)){
+			passenger = null;
+			return false;
+		}
+		passenger = target;
+		me.load(passenger);
+		return true;
+	}
 	
 	/**
 	 * Returns false if carrying no units yet
@@ -56,7 +68,10 @@ public class DropAgent {
 				me.unloadAll(toDropPosition(myTarget));
 				return;
 			}
-			if(close(me.getTilePosition(),next())){ path.remove(0);}
+			if(close(me.getTilePosition(),next())){ 
+				path.remove(0);
+				steps++;
+			}
 			if(path.isEmpty()&&!unloading){ 
 				me.unloadAll(toDropPosition(myTarget));
 			}else if(!path.isEmpty()){
@@ -64,7 +79,11 @@ public class DropAgent {
 			}
 			
 		}else{
-			me.rightClick(myHome);
+			myTarget = myHome;
+			if(!path.isEmpty()){
+				me.rightClick(next());
+			}else
+				me.rightClick(myHome);
 		}
 	}
 
@@ -76,7 +95,7 @@ public class DropAgent {
 				a.y()*32 + (int)(Math.random()*100 - 100));
 	}
 	private boolean close(TilePosition a, TilePosition b){
-		return a.getDistance(b) < 2;
+		return a.getDistance(b) < 5;
 	}
 	
 	/**
@@ -84,5 +103,6 @@ public class DropAgent {
 	 */
 	public void path(){
 		path = (new AStarThreat()).getPath(threatGrid,me.getTilePosition(),myTarget);
+		steps = 0;
 	}
 }

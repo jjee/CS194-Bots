@@ -260,26 +260,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			}
 	}
 	
-	public void vultureDrop() {
-		//Build second starport
-		if (UnitUtils.getAllMy(UnitType.TERRAN_STARPORT).size() < 2) {
-			placeAndBuild("Terran Starport");
-		}
-		for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_STARPORT))
-			UnitUtils.assumeControl(s).buildAddon(UnitType.TERRAN_CONTROL_TOWER);
-		for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_CONTROL_TOWER))
-			UnitUtils.assumeControl(s).research(TechType.CLOAKING_FIELD);
-		
-		//Build more dropships 
-		if (dropships.size() < vultures.size()/4) {
-			int i = 0;
-			for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_STARPORT)) {
-				if (i%2 == 0 && s.getTrainingQueue().isEmpty())
-					UnitUtils.assumeControl(s).train(UnitType.TERRAN_DROPSHIP);
-				i++;
-			}
-		}
-		
+	public void lateBuildOrder() {
 		//Wraiths
 		int j = 0;
 		for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_STARPORT)) {
@@ -298,6 +279,27 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			for (Unit w : toMove) {
 				w.attackMove(getClosestEnemyBuilding(w.getPosition()));
 				wraiths.put(w, 1);
+			}
+		}
+	}
+	
+	public void vultureDrop() {
+		//Build second starport
+		if (UnitUtils.getAllMy(UnitType.TERRAN_STARPORT).size() < 2) {
+			placeAndBuild("Terran Starport");
+		}
+		for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_STARPORT))
+			UnitUtils.assumeControl(s).buildAddon(UnitType.TERRAN_CONTROL_TOWER);
+		for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_CONTROL_TOWER))
+			UnitUtils.assumeControl(s).research(TechType.CLOAKING_FIELD);
+		
+		//Build more dropships 
+		if (dropships.size() < vultures.size()/4) {
+			int i = 0;
+			for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_STARPORT)) {
+				if (i%2 == 0 && s.getTrainingQueue().isEmpty())
+					UnitUtils.assumeControl(s).train(UnitType.TERRAN_DROPSHIP);
+				i++;
 			}
 		}
 		
@@ -477,7 +479,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		if (gameMode == 0) {
 			if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() > 0 || UnitUtils.getAllMy(UnitType.TERRAN_STARPORT).size() > 0) {
 				gameMode = 1;
-				System.out.println("entering intermediate mode");
+				System.out.println("early game");
 			}
 			else
 				earlyBuildOrder();
@@ -485,13 +487,21 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		else if (gameMode == 1) {
 			if (dropships.size() > 0) {
 				gameMode = 2;
-				System.out.println("entering late game mode");
+				System.out.println("intermediate game");
 			}
 			else
 				intermediateBuildOrder();
 		}
 		else if (gameMode == 2) {
+			if (UnitUtils.getAllMy(UnitType.TERRAN_DROPSHIP).size() > 1) {
+				gameMode = 3;
+				System.out.println("late game");
+			}
 			vultureDrop();
+		}
+		else if (gameMode == 3) {
+			vultureDrop();
+			lateBuildOrder();
 		}
 		  
 		//Bunker

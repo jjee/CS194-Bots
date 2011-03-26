@@ -41,6 +41,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 	private HashMap<Unit, Integer> workers = new HashMap<Unit, Integer>();
 	private HashMap<Unit, Integer> vultures = new HashMap<Unit, Integer>();
 	private HashMap<Unit, Integer> dropships = new HashMap<Unit, Integer>();
+	private HashMap<Unit, Integer> wraiths = new HashMap<Unit, Integer>();
 	
 	boolean toScout = true;
 	private TilePosition scoutTarget;
@@ -55,6 +56,8 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 	private int gameMode = 0;
 	private int buildDistance = 12;
 	private int numIterations = 500;
+	private int numGasHarvesters = 2;
+	private int sparkyLives = 3;
 	private Random rand = new Random();
 	
 	@Override
@@ -103,7 +106,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 	}
 	
 	public void scout() {
-		if (scouted.containsAll(Game.getInstance().getStartLocations())) {
+		if (scouted.containsAll(Game.getInstance().getStartLocations()) || !enemyBases.isEmpty()) {
 			toScout = false;
 			sparky.rightClick(myHome);
 		}
@@ -209,25 +212,6 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 					UnitUtils.assumeControl(u).train(UnitType.TERRAN_MARINE);
 			}
 		}
-	  
-		//Bunker
-		if (UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size() > 0 && UnitUtils.getAllMy(UnitType.TERRAN_BUNKER).size() < 2) {
-			Unit builder = null;
-			int numBuilders = 2;
-			for (Unit w : workers.keySet()) {
-				if (workers.get(w) == 0 && !w.isConstructing()) {
-					builder = w;
-					break;
-				}
-				if (--numBuilders <= 0)
-					break;
-			}
-			if (builder != null) {
-				int x = rand.nextInt(6)-3;
-				int y = rand.nextInt(6)-3;
-				builder.build((new TilePosition(rallyPoints.get(1))).add(x, y), UnitType.TERRAN_BUNKER);
-			}
-		}
 		
 		//Barracks
 		if (UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size() == 0) {
@@ -256,7 +240,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			UnitUtils.assumeControl(s).buildAddon(UnitType.TERRAN_CONTROL_TOWER);
 		
 		//More factories
-		if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() < 3)
+		if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() < 2)
 			placeAndBuild("Terran Factory");
 		for (ROUnit f : UnitUtils.getAllMy(UnitType.TERRAN_FACTORY)) {
 			UnitUtils.assumeControl(f).buildAddon(UnitType.TERRAN_MACHINE_SHOP);
@@ -283,37 +267,57 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		}
 		for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_STARPORT))
 			UnitUtils.assumeControl(s).buildAddon(UnitType.TERRAN_CONTROL_TOWER);
+		for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_CONTROL_TOWER))
+			UnitUtils.assumeControl(s).research(TechType.CLOAKING_FIELD);
 		
 		//Build more dropships 
 		if (dropships.size() < vultures.size()/4) {
+			int i = 0;
 			for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_STARPORT)) {
-				if (s.getTrainingQueue().isEmpty())
+				if (i%2 == 0 && s.getTrainingQueue().isEmpty())
 					UnitUtils.assumeControl(s).train(UnitType.TERRAN_DROPSHIP);
+				i++;
+			}
+		}
+		
+		//Wraiths
+		int j = 0;
+		for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_STARPORT)) {
+			if (j%2 == 1 && s.getTrainingQueue().isEmpty())
+				UnitUtils.assumeControl(s).train(UnitType.TERRAN_WRAITH);
+			j++;
+		}
+		ArrayList<Unit> toMove = new ArrayList<Unit>();
+		for (Unit w : wraiths.keySet()) {
+			if (wraiths.get(w) == 0)
+				toMove.add((Unit) w);
+			else if (w.isIdle())
+				w.attackMove(getClosestEnemyBuilding(w.getPosition()));
+		}
+		if (toMove.size() > 2 && !enemyBuildings.isEmpty()) {
+			for (Unit w : toMove) {
+				w.attackMove(getClosestEnemyBuilding(w.getPosition()));
+				wraiths.put(w, 1);
 			}
 		}
 		
 		//Train vultures
-		for (ROUnit f : UnitUtils.getAllMy(UnitType.TERRAN_FACTORY)) {
-			if (f.getTrainingQueue().isEmpty())
-				UnitUtils.assumeControl(f).train(UnitType.TERRAN_VULTURE);
+		if (vultures.size() < 16) {
+			for (ROUnit f : UnitUtils.getAllMy(UnitType.TERRAN_FACTORY)) {
+				if (f.getTrainingQueue().isEmpty())
+					UnitUtils.assumeControl(f).train(UnitType.TERRAN_VULTURE);
+			}
 		}
 		
 		//Vultures attack
 		for (Unit v: vultures.keySet()) {
 			if (vultures.get(v) == 1) {
-				if (v.getSpiderMineCount() > 0 && rand.nextDouble() < 0.1) {
+				if (rand.nextDouble() < 0.005) {
 					v.useTech(TechType.SPIDER_MINES, v.getPosition());
 				}
-				else if (v.isIdle() && !enemyBuildings.isEmpty()) {
-					Position closest = enemyBuildings.get(0).getPosition();
-					double currDistance = v.getDistance(closest);
-					for (Unit building : enemyBuildings) {
-						if (v.getDistance(building) < currDistance) {
-							closest = building.getPosition();
-							currDistance = v.getDistance(building);
-						}
-					}				
-					v.attackMove(closest);
+				else if (v.isIdle()) {
+					if (!enemyBuildings.isEmpty())	
+						v.attackMove(getClosestEnemyBuilding(v.getPosition()));
 				}
 			}
 		}
@@ -352,11 +356,11 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 				d.move(intermediaries.get(i));
 				dropships.put(d, i+2);
 			}
-			if (dropships.get(d) == 2 && (d.getDistance(intermediaries.get(0)) < 400 || d.getDistance(target) < 200)) {
+			if (dropships.get(d) == 2 && (d.getDistance(intermediaries.get(0)) < 100 || d.getDistance(target) < 200)) {
 				dropships.put(d, 4);
 				d.stop();
 			}
-			else if (dropships.get(d) == 3 && (d.getDistance(intermediaries.get(1)) < 400 || d.getDistance(target) < 200)) {
+			else if (dropships.get(d) == 3 && (d.getDistance(intermediaries.get(1)) < 100 || d.getDistance(target) < 200)) {
 				dropships.put(d, 4);
 				d.stop();
 			}
@@ -365,7 +369,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			if (dropships.get(d) == 4 && d.isIdle()) {
 				d.move(target);
 			}
-			if (dropships.get(d) == 4 && d.getDistance(target) < 200) {
+			if (dropships.get(d) == 4 && d.getDistance(target) < 100) {
 				dropships.put(d, 5);
 			}
 			if (dropships.get(d) == 5) {
@@ -379,42 +383,62 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		}
 	}
 	
-	  public void onFrame() {
-		  if (toScout)
-			  scout();
-		  else
-			  cheese();
+	public boolean minesClear(Position loc) {
+		for (ROUnit mine : UnitUtils.getAllMy(UnitType.TERRAN_VULTURE_SPIDER_MINE)) {
+			if (mine.getPosition().getDistance(loc) < 100)
+				return false;
+		}
+		return true;
+	}
+	
+	public Position getClosestEnemyBuilding (Position loc) {
+		Position closest = enemyBuildings.get(0).getLastKnownPosition();
+		double currDistance = loc.getDistance(closest);
+		for (Unit building : enemyBuildings) {
+			if (loc.getDistance(building.getLastKnownPosition()) < currDistance) {
+				closest = building.getLastKnownPosition();
+				currDistance = loc.getDistance(building.getLastKnownPosition());
+			}
+		}
+		return closest;
+	}
+	
+	public void onFrame() {
+		if (toScout)
+			scout();
+		else
+			cheese();
 		  
-		  //Rebuild list
-		  if (rebuildList.size() > 0) {
-			  UnitType toBuild = rebuildList.get(0);
-			  boolean tryRebuild = true;
-			  if (toBuild.equals(UnitType.TERRAN_COMMAND_CENTER)) {
-				  tryRebuild = placeAndBuild("Terran Command Center");
-			  }
-			  else if (toBuild.equals(UnitType.TERRAN_REFINERY)) {
-					Unit builder = null;
-					for (Unit w : workers.keySet()) {
-						if (workers.get(w) == 0) {
-							builder = w;
-							break;
-						}
+		//Rebuild list
+		if (rebuildList.size() > 0) {
+			UnitType toBuild = rebuildList.get(0);
+			boolean tryRebuild = true;
+			if (toBuild.equals(UnitType.TERRAN_COMMAND_CENTER)) {
+				tryRebuild = placeAndBuild("Terran Command Center");
+			}
+			else if (toBuild.equals(UnitType.TERRAN_REFINERY)) {
+				Unit builder = null;
+				for (Unit w : workers.keySet()) {
+					if (workers.get(w) == 0) {
+						builder = w;
+						break;
 					}
-					if (builder != null) {
-						ROUnit closestPatch = UnitUtils.getClosest(builder, Game.getInstance().getGeysers());
-						if (closestPatch != null) {
-							builder.build(closestPatch.getTilePosition(), UnitType.TERRAN_REFINERY);
-							tryRebuild = true;
-						} 
-						else
-							tryRebuild = false;
-					}
+				}
+				if (builder != null) {
+					ROUnit closestPatch = UnitUtils.getClosest(builder, Game.getInstance().getGeysers());
+					if (closestPatch != null) {
+						builder.build(closestPatch.getTilePosition(), UnitType.TERRAN_REFINERY);
+						tryRebuild = true;
+					} 
 					else
 						tryRebuild = false;
-			  }
-			  if (tryRebuild)
-				  rebuildList.remove(0);
-		  }
+				}
+				else
+					tryRebuild = false;
+			}
+			if (tryRebuild)
+				rebuildList.remove(0);
+		}
 		  
 		  //Repairs
 /*		  for (ROUnit u : me.getUnits()) {
@@ -439,236 +463,273 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			  }
 		  }*/
 		  
-		  //Make sure have enough supply depots
-		  if (me.supplyUsed() >= me.supplyTotal()-5)
-			  placeAndBuild("Terran Supply Depot");
+		//Make sure have enough supply depots
+		if (me.supplyUsed() >= me.supplyTotal()-5)
+			placeAndBuild("Terran Supply Depot");
 		  
-		  //Make sure have enough workers
-		  if (me.minerals() > 50 && workers.size() < 9 && UnitUtils.getAllMy(UnitType.TERRAN_SUPPLY_DEPOT).size() > 0) {
-			  if (myBase.getTrainingQueue().isEmpty())
-				  myBase.train(UnitType.TERRAN_SCV);
-		  }
+		//Make sure have enough workers
+		if (me.minerals() > 50 && workers.size() < 12 && UnitUtils.getAllMy(UnitType.TERRAN_SUPPLY_DEPOT).size() > 0) {
+			if (myBase.getTrainingQueue().isEmpty())
+				myBase.train(UnitType.TERRAN_SCV);
+		}
 		  
-		  //Game mode
-		  if (gameMode == 0) {
-			  if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() > 0 || UnitUtils.getAllMy(UnitType.TERRAN_STARPORT).size() > 0) {
-				  gameMode = 1;
-				  System.out.println("entering intermediate mode");
+		//Game mode
+		if (gameMode == 0) {
+			if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() > 0 || UnitUtils.getAllMy(UnitType.TERRAN_STARPORT).size() > 0) {
+				gameMode = 1;
+				System.out.println("entering intermediate mode");
+			}
+			else
+				earlyBuildOrder();
+		}
+		else if (gameMode == 1) {
+			if (dropships.size() > 0) {
+				gameMode = 2;
+				System.out.println("entering late game mode");
+			}
+			else
+				intermediateBuildOrder();
+		}
+		else if (gameMode == 2) {
+			vultureDrop();
+		}
+		  
+		//Bunker
+		if (UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size() > 0 && UnitUtils.getAllMy(UnitType.TERRAN_BUNKER).size() < 2) {
+			Unit builder = null;
+			int numBuilders = 2;
+			for (Unit w : workers.keySet()) {
+				if (workers.get(w) == 0 && !w.isConstructing()) {
+					builder = w;
+					break;
+				}
+				if (--numBuilders <= 0)
+					break;
+			}
+			if (builder != null) {
+				int x = rand.nextInt(6)-3;
+				int y = rand.nextInt(6)-3;
+				builder.build((new TilePosition(rallyPoints.get(1))).add(x, y), UnitType.TERRAN_BUNKER);
+			}
+		}
+		  
+		//If have enough minerals, make more barracks
+		if (me.minerals() > 600)
+			placeAndBuild("Terran Barracks");
+		  
+		//If have enough minerals, make more marines
+		if (me.minerals() > 200) {
+			for (ROUnit b: UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS)) {
+				if (b.getTrainingQueue().isEmpty())
+					UnitUtils.assumeControl(b).train(UnitType.TERRAN_MARINE);
+			}
+		}
+		  
+		//Rally vultures
+		int numAttacking = 0;
+		for (Unit v: vultures.keySet()) {
+		  if (vultures.get(v) == 0) {
+			  if (v.getSpiderMineCount() > 2 && v.isIdle()) {
+				  int x = rand.nextInt(150)-75;
+				  int y = rand.nextInt(150)-75;
+				  Position loc = rallyPoints.get(3).add(x, y);
+				  if (minesClear(loc))
+					  v.useTech(TechType.SPIDER_MINES, loc);
 			  }
-			  else
-				  earlyBuildOrder();
-		  }
-		  else if (gameMode == 1) {
-			  if (dropships.size() > 0) {
-				  gameMode = 2;
-				  System.out.println("entering late game mode");
-			  }
-			  else
-				  intermediateBuildOrder();
-		  }
-		  else if (gameMode == 2) {
-			  vultureDrop();
-		  }
-		  
-		  //If have enough minerals, make more barracks
-		  if (me.minerals() > 1000)
-			  placeAndBuild("Terran Barracks");
-		  
-		  //If have enough minerals, make more marines
-		  if (me.minerals() > 300) {
-			  for (ROUnit b: UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS)) {
-				  if (b.getTrainingQueue().isEmpty())
-					  UnitUtils.assumeControl(b).train(UnitType.TERRAN_MARINE);
-			  }
-		  }
-		  
-		  //Rally vultures
-		  int numAttacking = 0;
-		  for (ROUnit v: UnitUtils.getAllMy(UnitType.TERRAN_VULTURE)) {
-			  if (vultures.get(v) == 0) {
-				  if (v.getSpiderMineCount() > 2 && v.isIdle()) {
-					  int x = rand.nextInt(80)-40;
-					  int y = rand.nextInt(80)-40;
-					  UnitUtils.assumeControl(v).useTech(TechType.SPIDER_MINES, rallyPoints.get(3).add(x, y));
-				  }
-				  if (numAttacking >= 6 && !enemyBuildings.isEmpty() && v.isIdle())
-					  UnitUtils.assumeControl(v).attackMove(enemyBuildings.get(0).getLastKnownPosition());
-				  else if (v.isIdle() && v.getDistance(rallyPoints.get(0)) > 300) {
-					  UnitUtils.assumeControl(v).attackMove(rallyPoints.get(0));
-				  }
-			  }
-			  else if (vultures.get(v) == 1)
-				  numAttacking++;
-		  }
-		  
-		  //Rally marines
-		  int numMarines = UnitUtils.getAllMy(UnitType.TERRAN_MARINE).size();
-		  for (ROUnit m: UnitUtils.getAllMy(UnitType.TERRAN_MARINE)) {
-			  if (numMarines > 8 && !enemyBuildings.isEmpty() && m.isIdle())
-				  UnitUtils.assumeControl(m).attackMove(enemyBuildings.get(0).getLastKnownPosition());
-			  else if (m.isIdle() && m.getDistance(rallyPoints.get(2)) > 300)
-				  UnitUtils.assumeControl(m).attackMove(rallyPoints.get(2));
-		  }
-		  for (ROUnit b: UnitUtils.getAllMy(UnitType.TERRAN_BUNKER)) {
-			  if (b.getLoadedUnits().size() < 4) {
-				  for (ROUnit m: UnitUtils.getAllMy(UnitType.TERRAN_MARINE))
-					  UnitUtils.assumeControl(b).load(m);
-			  }
-		  }
-		  
-		  //Mine mine mine
-		  int numOnGas = 0;
-		  for (Unit u: workers.keySet()) {
-			  if (u.isIdle()) {
-				  ROUnit closestPatch = UnitUtils.getClosest(u, Game.getInstance().getMinerals());
-				  if (closestPatch != null)
-					  u.rightClick(closestPatch);
-				  workers.put(u, 0);
-			  }
-			  else if (u.isGatheringGas())
-				  numOnGas++;
-			  
-			  Game.getInstance().drawLineMap(u.getPosition(), Position.centerOfTile(myHome), Color.GREEN);
-		  }
-		  
-		  //Gas
-		  if (numOnGas < 2) {
-			  for (ROUnit r : UnitUtils.getAllMy(UnitType.TERRAN_REFINERY)) {
-				  if (r.isCompleted()) {
-					  for (Unit w : workers.keySet()) {
-						  if (workers.get(w) == 0 || w.isIdle()) {
-							  w.rightClick(r);
-							  workers.put(w, 1);
-							  numOnGas++;
-						  }
-						  if (numOnGas >= 2)
-							  break;
-					  }
-				  }
+			  if (numAttacking >= 6 && !enemyBuildings.isEmpty() && v.isIdle())
+				 vultures.put(v, 1);
+			  else if (v.isIdle() && v.getDistance(rallyPoints.get(0)) > 300) {
+				  v.attackMove(rallyPoints.get(0));
 			  }
 		  }
-	  }
-
-		@Override
-	  public void onStart() {
-			me = Game.getInstance().self();
-			myHome = me.getStartLocation();
-			
-			for(ROUnit u: me.getUnits()) {
-				if(u.getType().isWorker()) {
-					workers.put(UnitUtils.assumeControl(u), 0);
-				} else if(u.getType().isResourceDepot()) {
-					myBase = UnitUtils.assumeControl(u);
+		  else if (vultures.get(v) == 1)
+			  numAttacking++;
+		}
+		  
+		//Rally marines
+		int numMarines = UnitUtils.getAllMy(UnitType.TERRAN_MARINE).size();
+		for (ROUnit m: UnitUtils.getAllMy(UnitType.TERRAN_MARINE)) {
+			if (numMarines > 12 && !enemyBuildings.isEmpty() && m.isIdle()) {
+				UnitUtils.assumeControl(m).attackMove(getClosestEnemyBuilding(m.getPosition()));
+			}
+			else if (m.isIdle() && m.getDistance(rallyPoints.get(2)) > 300)
+				UnitUtils.assumeControl(m).attackMove(rallyPoints.get(2));
+		}
+		for (ROUnit b: UnitUtils.getAllMy(UnitType.TERRAN_BUNKER)) {
+			if (b.getLoadedUnits().size() < 4) {
+				for (ROUnit m: UnitUtils.getAllMy(UnitType.TERRAN_MARINE))
+					UnitUtils.assumeControl(b).load(m);
+			}
+		}
+		  
+		//Mine mine mine
+		int numOnGas = 0;
+		for (Unit u: workers.keySet()) {
+			if (u.isIdle()) {
+				ROUnit closestPatch = UnitUtils.getClosest(u, Game.getInstance().getMinerals());
+				if (closestPatch != null) {
+					u.rightClick(closestPatch);
+					workers.put(u, 0);
 				}
 			}
+			else if (u.isGatheringGas())
+				numOnGas++;
+			
+			Game.getInstance().drawLineMap(u.getPosition(), Position.centerOfTile(myHome), Color.GREEN);
+		}
 
-			for (Unit w : workers.keySet()) {
-				sparky = w;
-				workers.remove(w);
-				break;
-			}
-	  }
-
-	  public void onUnitCreate(ROUnit unit) {
-		  if(unit.getType().isWorker() && !unit.equals(sparky)) {
-			  workers.put(UnitUtils.assumeControl(unit), 0);
-		  }
-		  else if (unit.getType().equals(UnitType.TERRAN_VULTURE)) {
-			  vultures.put(UnitUtils.assumeControl(unit), 0);
-		  }	  
-		  else if (unit.getType().equals(UnitType.TERRAN_DROPSHIP)) {
-			  dropships.put(UnitUtils.assumeControl(unit), 0);
-		  }
-	  }
-
-	  public void onUnitDestroy(ROUnit unit) { 
-		  if(unit.equals(sparky)) {
-			  for (Unit w : workers.keySet()) {
-				  if (workers.get(w) == 0) {
-					  sparky = w;
-					  workers.remove(w);
-					  break;
-				  }
-			  }
-			  sparky.rightClick(enemyBases.get(0));
-		  }
-		  else if(workers.containsKey(unit)) {
-			  workers.remove(UnitUtils.assumeControl(unit));
-		  }
-		  if (enemyBuildings.contains((Unit)unit))
-			  enemyBuildings.remove(unit);
-		  if (enemyBases.contains((Unit)unit))
-			  enemyBases.remove(unit);
-		  else if (vultures.containsKey(unit)) {
-			  vultures.remove(UnitUtils.assumeControl(unit));
-		  }	  
-		  else if (dropships.containsKey(unit)) {
-			  dropships.remove(UnitUtils.assumeControl(unit));
-		  }
-		  
-		  if (unit.getPlayer().equals(me) && unit.getType().isBuilding())
-			  rebuildList.add(unit.getType());
-	  }
-
-		@Override
-	  public void onUnitHide(ROUnit unit) {
-		  
-	  }
-
-		@Override
-	  public void onUnitMorph(ROUnit unit) {
-		  
-	  }
+		//Gas
+		if (me.gas() > 4*me.minerals())
+			numGasHarvesters = 0;
+		else if (me.gas() > 3*me.minerals())
+			numGasHarvesters = 1;
+		else if (me.gas() > 2*me.minerals())
+			numGasHarvesters = 2;
+		else
+			numGasHarvesters = 3;
 		
-		@Override
-	  public void onUnitShow(ROUnit unit) {
-			if (unit.getType().isBuilding() && unit.getPlayer().isEnemy(me)) {
-				if (!enemyBuildings.contains((Unit)unit))
-					enemyBuildings.add((Unit)unit);
-				if (unit.getType().isResourceDepot()) {
-					enemyBases.add(unit.getPosition());
-					if (intermediaries.size() == 0) {
-						if (unit.getPosition().x() > myBase.getPosition().x())
-							intermediaries.add(new Position(Game.getInstance().getMapWidth()*32, myBase.getPosition().y()));
-						else
-							intermediaries.add(new Position(0, myBase.getPosition().y()));
-						if (unit.getPosition().y() > myBase.getPosition().y())
-							intermediaries.add(new Position(myBase.getPosition().x(), 0));
-						else
-							intermediaries.add(new Position(myBase.getPosition().x(), Game.getInstance().getMapHeight()*32));
+		if (numOnGas < numGasHarvesters) {
+			for (ROUnit r : UnitUtils.getAllMy(UnitType.TERRAN_REFINERY)) {
+				if (r.isCompleted()) {
+					for (Unit w : workers.keySet()) {
+						if (workers.get(w) == 0 || w.isIdle()) {
+							w.rightClick(r);
+							workers.put(w, 1);
+							numOnGas++;
+						}
+						if (numOnGas >= numGasHarvesters)
+							break;
 					}
 				}
 			}
+		}
+		else {
+			int diff = numOnGas - numGasHarvesters;
+			for (Unit u: workers.keySet()) {
+				if (diff <= 0)
+					break;
+				if (u.isGatheringGas()) {
+					u.stop();
+					diff--;
+				}
+			}
+		}
+	}
+
+	public void onStart() {
+		me = Game.getInstance().self();
+		myHome = me.getStartLocation();
+			
+		for(ROUnit u: me.getUnits()) {
+			if(u.getType().isWorker()) {
+				workers.put(UnitUtils.assumeControl(u), 0);
+			} else if(u.getType().isResourceDepot()) {
+				myBase = UnitUtils.assumeControl(u);
+			}
+		}
+
+		for (Unit w : workers.keySet()) {
+			sparky = w;
+			workers.remove(w);
+			break;
+		}
+	}
+
+	public void onUnitCreate(ROUnit unit) {
+		if(unit.getType().isWorker() && !unit.equals(sparky))
+			workers.put(UnitUtils.assumeControl(unit), 0);
+		else if (unit.getType().equals(UnitType.TERRAN_VULTURE))
+			vultures.put(UnitUtils.assumeControl(unit), 0); 
+		else if (unit.getType().equals(UnitType.TERRAN_DROPSHIP))
+			dropships.put(UnitUtils.assumeControl(unit), 0);
+		else if (unit.getType().equals(UnitType.TERRAN_WRAITH))
+			wraiths.put(UnitUtils.assumeControl(unit), 0);
+	}
+
+	public void onUnitDestroy(ROUnit unit) { 
+		if(unit.equals(sparky)) {
+			if (sparkyLives > 0) {
+				for (Unit w : workers.keySet()) {
+					if (workers.get(w) == 0) {
+						sparky = w;
+						workers.remove(w);
+						break;
+					}
+				}
+				sparky.rightClick(enemyBases.get(0));
+				sparkyLives--;
+			}
+		}
+		else if(workers.containsKey(unit))
+			workers.remove(UnitUtils.assumeControl(unit));
+		if (enemyBuildings.contains((Unit)unit))
+			enemyBuildings.remove(unit);
+		if (enemyBases.contains((Unit)unit))
+			enemyBases.remove(unit);
+		else if (vultures.containsKey(unit))
+			vultures.remove(UnitUtils.assumeControl(unit)); 
+		else if (dropships.containsKey(unit))
+			dropships.remove(UnitUtils.assumeControl(unit));
+		else if (unit.getType().equals(UnitType.TERRAN_WRAITH))
+			wraiths.remove(UnitUtils.assumeControl(unit));
+		
+		if (unit.getPlayer().equals(me) && unit.getType().isBuilding())
+			rebuildList.add(unit.getType());
 	  }
+
+	public void onUnitHide(ROUnit unit) {
+		  
+	}
+
+	public void onUnitMorph(ROUnit unit) {
+		  
+ 	}
+		
+	public void onUnitShow(ROUnit unit) {
+		if (unit.getType().isBuilding() && unit.getPlayer().isEnemy(me)) {
+			if (!enemyBuildings.contains((Unit)unit))
+				enemyBuildings.add((Unit)unit);
+			if (unit.getType().isResourceDepot()) {
+				enemyBases.add(unit.getPosition());
+				if (intermediaries.size() == 0) {
+					if (unit.getPosition().x() > myBase.getPosition().x())
+						intermediaries.add(new Position(unit.getPosition().x()+200, myBase.getPosition().y()));
+					else
+						intermediaries.add(new Position(unit.getPosition().x()-200, myBase.getPosition().y()));
+					if (unit.getPosition().y() > myBase.getPosition().y())
+						intermediaries.add(new Position(myBase.getPosition().x(), unit.getPosition().y()+200));
+					else
+						intermediaries.add(new Position(myBase.getPosition().x(), unit.getPosition().y()-200));
+				}
+			}
+		}
+	}
 		
 
-		@Override
-	  public void onEnd(boolean isWinnerFlag) {
-		  if(isWinnerFlag == true)
-			  Game.getInstance().printf("GG");
-	  }
+	public void onEnd(boolean isWinnerFlag) {
+		if(isWinnerFlag == true)
+			Game.getInstance().printf("GG");
+	}
 		
-		// Feel free to add command and things here.
-		// bindFields will bind all member variables of the object
-		// commands should be self explanatory...
-		protected void initializeJython() {
-			jython.bindFields(this);
-			jython.bind("game", Game.getInstance());
-			jython.bindIntCommand("speed",new Command<Integer>() {
-				@Override
-				public void call(Integer arg) {
-					Game.getInstance().printf("Setting speed to %d",arg);
-					Game.getInstance().setLocalSpeed(arg);	      
-				}
-			});
+	// Feel free to add command and things here.
+	// bindFields will bind all member variables of the object
+	// commands should be self explanatory...
+	protected void initializeJython() {
+		jython.bindFields(this);
+		jython.bind("game", Game.getInstance());
+		jython.bindIntCommand("speed",new Command<Integer>() {
+			@Override
+			public void call(Integer arg) {
+				Game.getInstance().printf("Setting speed to %d",arg);
+				Game.getInstance().setLocalSpeed(arg);	      
+			}
+		});
 			
-			jython.bindThunk("reset",new Thunk() {
-				@Override
-				public void call() {
-					initializeJython();
-		      
-				}
-			});
-			
-		}
+		jython.bindThunk("reset",new Thunk() {
+			@Override
+			public void call() {
+				initializeJython(); 
+			}
+		});	
+	}
 }

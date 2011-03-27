@@ -3,6 +3,12 @@ package fixedBots;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
+
+import org.bwapi.proxy.ProxyBot;
+import org.bwapi.proxy.ProxyBotFactory;
+import org.bwapi.proxy.ProxyServer;
+import org.bwapi.proxy.model.Color;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
@@ -14,6 +20,7 @@ import org.bwapi.proxy.model.UnitType;
 import edu.berkeley.nlp.starcraft.AbstractCerebrate;
 import edu.berkeley.nlp.starcraft.Cerebrate;
 import edu.berkeley.nlp.starcraft.Strategy;
+import edu.berkeley.nlp.starcraft.overmind.Overmind;
 import edu.berkeley.nlp.starcraft.scripting.Command;
 import edu.berkeley.nlp.starcraft.scripting.JythonInterpreter;
 import edu.berkeley.nlp.starcraft.scripting.Thunk;
@@ -26,6 +33,7 @@ public abstract class EmptyFixedBot extends AbstractCerebrate implements Strateg
 	protected Race myRace;
 	protected SCMap myMap;
   
+	private final static int GAME_SPEED = 0;
 	private final static int TILE_SIZE = 32;
 	
 	@Override
@@ -55,7 +63,7 @@ public abstract class EmptyFixedBot extends AbstractCerebrate implements Strateg
 		myBases = new ArrayList<Unit>();
 		myRace = Game.getInstance().self().getRace();
 		myMap = new SCMap();
-		//Game.getInstance().setLocalSpeed(GAME_SPEED);
+		Game.getInstance().setLocalSpeed(GAME_SPEED);
 		for(ROUnit u: Game.getInstance().self().getUnits()) {
 			if(u.getType().isWorker()) {
 				workers.add(UnitUtils.assumeControl(u));
@@ -207,7 +215,7 @@ public abstract class EmptyFixedBot extends AbstractCerebrate implements Strateg
 	public boolean close(TilePosition t1, TilePosition t2){
 		int x = Math.abs(t1.x() - t2.x());
 		int y = Math.abs(t1.y() - t2.y());
-		return x+y < 9;
+		return x+y < 8;
 	}
 	
 	public boolean close(List<ROUnit> units, TilePosition t1) {

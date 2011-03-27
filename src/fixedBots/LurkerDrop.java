@@ -481,6 +481,7 @@ public class LurkerDrop extends EmptyFixedBot{
 		}
 		if(mover != null){
 			for(Unit u: lurkers) {
+				if(u.isMorphing()) continue;
 				if(!defenders.contains(u) && mover.getLoadedUnits().size() < 2&&!u.isBurrowed()) {
 					mover.load(u);
 				}

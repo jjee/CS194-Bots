@@ -376,10 +376,12 @@ public class TwoGateRush extends EmptyFixedBot {
 				if(t.getName().equals(pylon)){
 					if(u.canBuildHere(tp, t)&&u.canBuildHere(next, t)&&
 							u.canBuildHere(prev, t)&& u.canBuildHere(bottom, t) && u.canBuildHere(top,t))
-						return tp;
+						if(Math.random() < 0.2)
+							return tp;
 					
 				}else if(u.canBuildHere(tp, t))
-					return tp;
+					if(Math.random()<0.2)
+						return tp;
 			}
 		}
 		return null;

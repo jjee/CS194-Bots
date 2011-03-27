@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.bwapi.proxy.model.Color;
@@ -37,6 +38,7 @@ public class LurkerDropWithData extends EmptyFixedBot{
 	String drop = "Zerg Overlord Drop Upgrade";
 	String lurker_up = "Zerg Lurker Upgrade";
 	String ovieSpeed = "Zerg Overlord Speed Upgrade";
+	//String hydraSpeed = "Zerg "
 	
 	boolean buildLock = false;
 	boolean buildComplete = false;
@@ -66,9 +68,11 @@ public class LurkerDropWithData extends EmptyFixedBot{
 	private int buildTimeout;
 	
 	private DropData data;
-	
+	private Map<Unit,DropAgent> droppers;
 	boolean dropTech;
 	boolean lurkTech;
+	boolean hydraSpeed;
+	boolean hydraRange;
 	
 	public void buildNext(){
 		if(!buildOrder.isEmpty()&&!buildLock){
@@ -164,7 +168,7 @@ public class LurkerDropWithData extends EmptyFixedBot{
 			//enough hydralisks?
 			boolean needHydras = (hydras.size() < 2);
 			//enough lurkers?
-			boolean needLurkers = (lurkers.size() < 3 + 5);
+			boolean needLurkers = (lurkers.size() < 5 + hydras.size()/6);
 			//enough zerglings?
 			boolean needLings = canBuild(zergling);
 			boolean needHatch = getMinerals() > 300+200*bases.size();
@@ -286,6 +290,7 @@ public class LurkerDropWithData extends EmptyFixedBot{
 					return false;
 				if(t.equals(UnitType.getUnitType(overlord))){
 					ovies.add(morpher);
+					droppers.put(morpher, new DropAgent(morpher,data.getThreats()));
 				}
 					
 				morpher.morph(t);
@@ -299,8 +304,17 @@ public class LurkerDropWithData extends EmptyFixedBot{
 		}else if(t.equals(UnitType.getUnitType(lurker))){
 			if(lurkTech&&!hydraDen.isResearching()&&getMinerals() >= t.mineralPrice() && getSupply() > 1
 					&& Game.getInstance().self().gas() >= t.gasPrice() && !hydras.isEmpty()){
-				hydras.get(0).morph(t);
+				Unit morpher = null;
+				for(Unit m: hydras){
+					if(!m.isMorphing()){
+						morpher = m;
+						break;
+					}
+				}
+				if(morpher == null) return false;
+				morpher.morph(t);
 				hydras.remove(0);
+				lurkers.add(morpher);
 				return true;
 			}else if(hydras.isEmpty()){
 				buildOrder.add(0,new BuildCommand(hydralisk));
@@ -370,6 +384,7 @@ public class LurkerDropWithData extends EmptyFixedBot{
 	
 	@Override
 	public void onFrame(){
+		data.refresh();
 		for(Unit u: drones) {
 			  	if(u.isIdle()) {
 			  		ROUnit closestPatch = UnitUtils.getClosest(u, Game.getInstance().getMinerals());
@@ -398,14 +413,18 @@ public class LurkerDropWithData extends EmptyFixedBot{
 	}
 	
 	public void scout(){
-		if(ovies.isEmpty())
+		if(ovies.isEmpty()||(scout!=null && !scout.exists()))
 			return;
 		else if(scout == null)
 			scout = ovies.get(0);
+		DropAgent dropper = droppers.get(scout);
 		if(scouted.containsAll(myMap.getStartSpots())) {
 			toScout = false;
 			System.out.println("Stop Scouting");
-			scout.rightClick(Game.getInstance().self().getStartLocation());
+			//scout.rightClick(Game.getInstance().self().getStartLocation());
+			if(!bases.isEmpty())
+				if(!dropper.needMove())
+					dropper.move(bases.get(0).getTilePosition());
 		}
 		
 		if(toScout){
@@ -413,8 +432,9 @@ public class LurkerDropWithData extends EmptyFixedBot{
 				if(scouted.contains(tp)) continue;
 				scoutTarget = tp;
 			}
-
-			scout.rightClick(scoutTarget);
+			if(!dropper.needMove())
+				dropper.move(scoutTarget);
+			//scout.rightClick(scoutTarget);
 		}
 		
 		if(scoutTarget!=null){
@@ -424,23 +444,7 @@ public class LurkerDropWithData extends EmptyFixedBot{
 			}
 		}
 	}
-	
-	private void dropNow(Unit m){
-		Order order = m.getOrder();
-		Position p = m.getPosition();
-		if(!order.equals(Order.MOVE_UNLOAD)||!order.equals(Order.UNLOAD)){
-			Position unloadPosition = new Position(p.x()+(int)(Math.random()*100)-50,
-					p.y() + (int)(Math.random()*100) - 50);
-			m.unloadAll(unloadPosition);
-			System.out.println("trying tio unload all");
-		}
-	}
-	
-	/*@Override
-	public boolean close(TilePosition t1, TilePosition t2){
-		double dist = t1.getDistance(t2);
-		return dist < 9;
-	}*/
+
 	
 	public void attack(){
 		int armyCount = 0;
@@ -478,7 +482,7 @@ public class LurkerDropWithData extends EmptyFixedBot{
 				u.burrow();
 			else if(!defenders.contains(u) && u.isBurrowed() && !close(enemyUnits,u.getTilePosition()))
 				u.unburrow();
-			if(!u.isBurrowed()||u.getTransport()!=null)
+			if(!u.isBurrowed()&&!u.isLoaded())
 				unborrowedLurkers++;
 		}
 		
@@ -493,30 +497,25 @@ public class LurkerDropWithData extends EmptyFixedBot{
 		}
 		if(mover != null){
 			for(Unit u: lurkers) {
-				if(!defenders.contains(u) && mover.getLoadedUnits().size() < 2&&!u.isBurrowed()) {
-					mover.load(u);
+				if(!defenders.contains(u) && mover.getLoadedUnits().size() < 1&&!u.isBurrowed()) {
+					if(u.getType().equals(UnitType.ZERG_LURKER)&&!u.isMorphing()&&!u.isLoaded())
+						(droppers.get(mover)).load(u);
 				}
 			}
 		}
 		//drop
 		for(Unit m: ovies){
-			if(m.getLoadedUnits().size() > 0 && close(enemyUnits,m.getTilePosition())){
-				//dropNow(m);
-				//System.out.println("unloading");
-				boundaries.put(m, true);
-				//continue;
-			}
-			if(m.getLoadedUnits().size() == 0 && m.isIdle()){
+			if(m.getLoadedUnits().size() == 0 && m.isIdle() && !m.equals(scout)){
 				boundaries.put(m, false);
 				if(unborrowedLurkers == 0&&!bases.isEmpty()){
 					TilePosition home = bases.get(0).getTilePosition();
 					if(!close(m.getTilePosition(),home))
-						m.move(home);
+						droppers.get(m).move(home);
 					//System.out.println("returning home");
 				}
 			}
-			TilePosition t = getTarget(m);
-			if(m.isIdle() && m.getLoadedUnits().size()>0 && !boundaries.get(m) && t != null) {
+			TilePosition t = getDropTarget();
+			/*if(m.isIdle() && m.getLoadedUnits().size()>0 && !boundaries.get(m) && t != null) {
 				int tx=t.x(), ty = t.y();
 				int borderx = 0;
 				int bordery = 0;
@@ -551,13 +550,45 @@ public class LurkerDropWithData extends EmptyFixedBot{
 					boundaries.put(m, true);
 				}
 			}
-			else if(m.isIdle()&&m.getLoadedUnits().size()>0){
+			else*/ 
+			//if(m.isIdle()&&m.getLoadedUnits().size()>0){
+			if(m.getLoadedUnits().size()>0){
 				if(t==null)
 					t = new TilePosition((int)(Math.random()*myMap.getWidth()),(int)(Math.random()*myMap.getHeight()));
 				Position p = new Position(t.x()*32+(int)(Math.random()*100)-50,
 						t.y()*32 + (int)(Math.random()*100) - 50);
-				m.unloadAll(p);
+				//m.unloadAll(p);
+				if(!droppers.get(m).getDropStatus()){
+					droppers.get(m).drop(t);
+				}
 			}
+		}
+		DropAgent toPath = null;
+		int longest = 50;
+		for(Unit m: ovies){
+			DropAgent dropper = droppers.get(m);
+			if(dropper.needPath()){
+				toPath = dropper;
+				break;
+			}
+			if(dropper.needMove()&&dropper.steps() > longest){
+				longest = dropper.steps();
+				toPath = dropper;
+			}
+		}
+		if(toPath!=null){
+			System.out.println("pathing" + toPath.needPath());
+			toPath.path();
+			System.out.println("done pathing");
+		}
+		for(Unit m: ovies){
+			DropAgent dropper = droppers.get(m);
+			if(dropper.getPickupStatus())
+				dropper.load();
+			else if(dropper.getDropStatus())
+				dropper.drop();
+			else if(dropper.needMove())
+				dropper.move();
 		}
 	}
 	
@@ -584,6 +615,25 @@ public class LurkerDropWithData extends EmptyFixedBot{
 			return null;
 		return target.getLastKnownTilePosition();
 		
+	}
+	
+	public TilePosition getDropTarget(){
+		int bestx = -10,besty = -10;
+		double bestVal = 10;
+		for(int x = 0; x < myMap.getWidth(); x++){
+			for(int y = 0; y<myMap.getHeight(); y++){
+				if(bestVal < data.getRatings()[x][y]){
+					bestx = x;
+					besty = y;
+					bestVal = data.getRatings()[x][y];
+				}	
+			}
+		}
+		if(bestx == -10){
+			//System.out.println("none");
+			return null;
+		}
+		return new TilePosition(bestx,besty);
 	}
 	
 	public void gasFrame(){
@@ -620,6 +670,7 @@ public class LurkerDropWithData extends EmptyFixedBot{
 		setUpBuildOrder();
 		scouted.add(Game.getInstance().self().getStartLocation());
 		data = new DropData(myMap.getWidth(),myMap.getHeight());
+		droppers = new HashMap<Unit,DropAgent>();
 	}
 	
 	@Override
@@ -702,8 +753,8 @@ public class LurkerDropWithData extends EmptyFixedBot{
 		if(u.getType().equals(UnitType.getUnitType(lurker))) {
 			if(defenders.size() < 3)
 				defenders.add(u);
-			lurkers.add(u);
-			hydras.remove(u);
+			//lurkers.add(u);
+			//hydras.remove(u);
 		}
 		if(u.getType().equals(UnitType.getUnitType(spawningPool)))
 			spawnPool = u;
@@ -726,10 +777,16 @@ public class LurkerDropWithData extends EmptyFixedBot{
 			bases.remove(u);
 		if(u.getType().equals(UnitType.getUnitType(larva)))
 			larvae.remove(u);
-		if(u.getType().equals(UnitType.getUnitType(drone)))
+		if(u.getType().equals(UnitType.getUnitType(drone))){
 			drones.remove(u);
+			if(extractDrone!=null&&u.equals(extractDrone)){
+				extractDrone = null;
+			}
+		}
 		if(u.getType().equals(UnitType.getUnitType(overlord))){
 			ovies.remove(u);
+			if(droppers.containsKey(u))
+				droppers.remove(u);
 			if(!buildOrder.isEmpty()&&
 					(!buildOrder.get(0).order.equals(overlord ) || getSupply() < 2))
 				buildOrder.add(0,new BuildCommand(overlord));

@@ -321,9 +321,8 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 				UnitUtils.assumeControl(f).train(UnitType.TERRAN_GOLIATH);
 			i++;
 		}
-		int numGoliaths = UnitUtils.getAllMy(UnitType.TERRAN_GOLIATH).size();
 		for (ROUnit g: UnitUtils.getAllMy(UnitType.TERRAN_GOLIATH)) {
-			if (!enemyBuildings.isEmpty() && (numGoliaths > 2 && g.isIdle() || g.getDistance(rallyPoints.get(2)) > 1000)) {
+			if (g.isIdle() && !enemyBuildings.isEmpty() && g.getDistance(rallyPoints.get(2)) > 1000) {
 				UnitUtils.assumeControl(g).attackMove(getClosestEnemyBuilding(g.getPosition()));
 			}
 			else if (g.isIdle() && g.getDistance(rallyPoints.get(2)) > 300)
@@ -403,9 +402,11 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 						d.load(v);
 					}
 				}
-				for (ROUnit g : UnitUtils.getAllMy(UnitType.TERRAN_GOLIATH)) {
-					if (!enemyBuildings.isEmpty() && g.getDistance(getClosestEnemyBuilding(g.getPosition())) > 300)
-						d.load(g);
+				if (UnitUtils.getAllMy(UnitType.TERRAN_GOLIATH).size() > 2) {
+					for (ROUnit g : UnitUtils.getAllMy(UnitType.TERRAN_GOLIATH)) {
+						if (!enemyBuildings.isEmpty() && g.getDistance(getClosestEnemyBuilding(g.getPosition())) > 300)
+							d.load(g);
+					}
 				}
 				for (ROUnit t : UnitUtils.getAllMy(UnitType.TERRAN_SIEGE_TANK_TANK_MODE)) {
 					if (!enemyBuildings.isEmpty() && t.getDistance(getClosestEnemyBuilding(t.getPosition())) > 300)

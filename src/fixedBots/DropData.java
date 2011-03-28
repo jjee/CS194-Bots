@@ -15,7 +15,7 @@ import org.bwapi.proxy.model.UnitType;
 public class DropData {
 	private double[][] ratings; //how good is a tile for dropping
 	private double[][] airThreat; //how dangerous is a tile for flying over
-	HashMap<ROUnit,TilePosition> mobile;
+	private HashMap<ROUnit, EnemyUnitDatum> mobile;
 	private Player self;
 	private int width, height;
 	int atkRange = 8*32;
@@ -28,16 +28,16 @@ public class DropData {
 				boolean canWalk = Game.getInstance().isWalkable(x/32*4, y/32*4);
 				if(canWalk){
 					ratings[x][y] = 9;
-					airThreat[x][y] = 5;
+					airThreat[x][y] = 1;
 				}else{
-					ratings[x][y] = 1;
+					ratings[x][y] = -10000;
 					airThreat[x][y] = 1;
 				}
 			}
 		}
 		
 		//buildings = new HashMap<ROUnit,TilePosition>();
-		mobile = new HashMap<ROUnit,TilePosition>();
+		mobile = new HashMap<ROUnit,EnemyUnitDatum>();
 		self = Game.getInstance().self();
 		this.width = width;
 		this.height = height;
@@ -48,32 +48,52 @@ public class DropData {
 		
 		if(mobile.containsKey(u)) { removeUnit(u);}
 		Position center = Position.centerOfTile(u.getTilePosition());
-		mobile.put(u, u.getTilePosition());
+		double dropRate = 0;
+		double threat = 0;
+		int threatRange = 0;
+		int ratingRange = atkRange;
 		if(u.getType().isBuilding()){
 			int amt = 10;
 			if(u.getType().isResourceDepot()) amt+=10;
 			if(u.getType().isRefinery()) amt+=5;
 			Game.getInstance().drawCircleMap(center, atkRange, Color.GREEN, false);
 			incrementOverRange(center,atkRange,amt,ratings);
+			dropRate+=amt;
 			if(u.getType().equals(UnitType.TERRAN_BUNKER)){
-				incrementOverRange(center,32*9,32,airThreat);
+				incrementOverRange(center,32*11,32*100,airThreat);
+				threat += (32*100);
+				threatRange = 32*11;
 			}
-		}else {
-			int amt = 2;
+		}else if(u.getType().isWorker()){
+			int amt = 10;
 			incrementOverRange(center,atkRange,amt,ratings);
+			dropRate +=amt;
 		}
-		
+		/*
 		if(u.getType().isDetector()){
 			int range = u.getType().sightRange()+32;
 			Game.getInstance().drawCircleMap(center, range, Color.YELLOW, false);
 			incrementOverRange(center,range,-50,ratings);
-		}
+			dropRate-=50;
+			ratingRange = range;
+		}*/
 		
 		if(u.getType().airWeapon().targetsAir()){
-			int range = u.getType().airWeapon().maxRange()+64;
+			int range = u.getType().airWeapon().maxRange()+32*3;
+			int damage = u.getAirWeaponDamage()*100;
 			Game.getInstance().drawCircleMap(center, range, Color.RED, false);
-			incrementOverRange(center,range,u.getAirWeaponDamage(),airThreat);
+			incrementOverRange(center,range,damage,airThreat);
+			
+			threat+=damage;
+			threatRange=range;
 		}
+		EnemyUnitDatum eud = new EnemyUnitDatum();
+		eud.airRange = threatRange;
+		eud.airThreat = threat;
+		eud.dropRange = ratingRange;
+		eud.dropRating = dropRate;
+		eud.tp = u.getTilePosition();
+		mobile.put(u, eud);
 	}
 	
 	private void incrementOverRange(Position center, int range, int amt, double[][] array){
@@ -101,7 +121,7 @@ public class DropData {
 				int squaredSum = dX*dX + dY*dY;
 				if(Math.sqrt(squaredSum) < range){
 					array[x][y]+=amt;
-					if(array[x][y] < 1) array[x][y] = 1;
+					if(array[x][y] < 1 && array.equals(airThreat)) array[x][y] = 1;
 				}
 			}
 		}
@@ -118,34 +138,12 @@ public class DropData {
 		
 		Position center = null;
 		if(mobile.containsKey(u))
-			center = Position.centerOfTile(mobile.get(u));
+			center = Position.centerOfTile(mobile.get(u).tp);
 		if(center==null) return;
-
-		if(u.getType().isBuilding()){
-			int amt = -10;
-			if(u.getType().isResourceDepot()) amt-=10;
-			if(u.getType().isRefinery()) amt-=5;
-			Game.getInstance().drawCircleMap(center, atkRange, Color.GREEN, false);
-			incrementOverRange(center,atkRange,amt,ratings);
-			if(u.getType().equals(UnitType.TERRAN_BUNKER)){
-				incrementOverRange(center,32*9,-32,airThreat);
-			}
-		}else {
-			int amt = -2;
-			incrementOverRange(center,atkRange,amt,ratings);
-		}
+		EnemyUnitDatum eud = mobile.get(u);
+		incrementOverRange(center,eud.airRange,-(int)eud.airThreat,airThreat);
+		incrementOverRange(center,eud.dropRange,-(int)eud.dropRating,ratings);
 		
-		if(u.getType().isDetector()){
-			int range = u.getType().sightRange()+32;
-			Game.getInstance().drawCircleMap(center, range, Color.YELLOW, false);
-			incrementOverRange(center,range,50,ratings);
-		}
-		
-		if(u.getType().airWeapon().targetsAir()){
-			int range = u.getType().airWeapon().maxRange()+64;
-			Game.getInstance().drawCircleMap(center, range, Color.RED, false);
-			incrementOverRange(center,range,-u.getAirWeaponDamage(),airThreat);
-		}
 		if(mobile.containsKey(u)) mobile.remove(u);
 	}
 	
@@ -162,4 +160,5 @@ public class DropData {
 	
 	public double[][] getRatings(){ return ratings;}
 	public double[][] getThreats(){ return airThreat;}
+	public HashMap<ROUnit,EnemyUnitDatum> mobile(){return mobile;}
 }

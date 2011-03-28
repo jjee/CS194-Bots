@@ -37,6 +37,7 @@ public class LurkerDrop extends EmptyFixedBot{
 	String drop = "Zerg Overlord Drop Upgrade";
 	String lurker_up = "Zerg Lurker Upgrade";
 	String ovieSpeed = "Zerg Overlord Speed Upgrade";
+	//String hydraSpeed = "Zerg "
 	
 	boolean buildLock = false;
 	boolean buildComplete = false;
@@ -63,10 +64,14 @@ public class LurkerDrop extends EmptyFixedBot{
 	private TilePosition scoutTarget;
 	private boolean buildOvie = false;
 	private HashMap<Unit, Boolean> boundaries = new HashMap<Unit, Boolean>();
-	private int buildCount;
+	private int buildTimeout;
+	
+	private DropData data;
 	
 	boolean dropTech;
 	boolean lurkTech;
+	boolean hydraSpeed;
+	boolean hydraRange;
 	
 	public void buildNext(){
 		if(!buildOrder.isEmpty()&&!buildLock){
@@ -141,13 +146,13 @@ public class LurkerDrop extends EmptyFixedBot{
 			//is there a hydraden?
 			boolean buildHydraDen = (hydraDen == null);
 			//enough supply?
-			int supplyNeeded = 4*bases.size() - getSupply();
+			int supplyNeeded = 6*bases.size() - getSupply();
 			int oviesWillHave = 0;
 			for(ROUnit u: ovies){
 				if(u.isMorphing())
 					oviesWillHave++;
-				else if(u.getType().equals(UnitType.getUnitType(larva)))
-					oviesWillHave++;	
+				//else if(u.getType().equals(UnitType.getUnitType(larva)))
+					//oviesWillHave++;	
 			}
 			boolean needSupply = false;
 			if(oviesWillHave*16 < supplyNeeded)
@@ -162,10 +167,10 @@ public class LurkerDrop extends EmptyFixedBot{
 			//enough hydralisks?
 			boolean needHydras = (hydras.size() < 2);
 			//enough lurkers?
-			boolean needLurkers = (lurkers.size() < 6);
+			boolean needLurkers = (lurkers.size() < 5 + hydras.size()/6);
 			//enough zerglings?
 			boolean needLings = canBuild(zergling);
-			boolean needHatch = getMinerals() > 400+200*bases.size();
+			boolean needHatch = getMinerals() > 300+200*bases.size();
 			
 			for(Unit h: bases){
 				if(h.isMorphing())
@@ -189,13 +194,13 @@ public class LurkerDrop extends EmptyFixedBot{
 					createUnit(UnitType.getUnitType(lurker),null);
 				}else if(canBuild(hydralisk)&&!needLurkers){
 					createUnit(UnitType.getUnitType(hydralisk),null);
-				}else if(needLings&&getMinerals()>150){
+				}else if(needLings&&getMinerals()>100){
 					createUnit(UnitType.getUnitType(zergling),null);
 				}
 			}
 		}else{
-			if(buildCount <50){
-				buildCount++;
+			if(buildTimeout <50){
+				buildTimeout++;
 				return;
 			}
 			//check to see if builder still actually going to build 
@@ -261,7 +266,7 @@ public class LurkerDrop extends EmptyFixedBot{
 					if(tp!=null){
 						morpher.build(tp,t);
 						lastBuilder = morpher;
-						buildCount = 0;
+						buildTimeout = 0;
 						buildLock = true;
 						Game.getInstance().drawLineMap(morpher.getPosition(), Position.centerOfTile(tp), Color.GREEN);
 						drones.remove(morpher);
@@ -297,8 +302,17 @@ public class LurkerDrop extends EmptyFixedBot{
 		}else if(t.equals(UnitType.getUnitType(lurker))){
 			if(lurkTech&&!hydraDen.isResearching()&&getMinerals() >= t.mineralPrice() && getSupply() > 1
 					&& Game.getInstance().self().gas() >= t.gasPrice() && !hydras.isEmpty()){
-				hydras.get(0).morph(t);
+				Unit morpher = null;
+				for(Unit m: hydras){
+					if(!m.isMorphing()){
+						morpher = m;
+						break;
+					}
+				}
+				if(morpher == null) return false;
+				morpher.morph(t);
 				hydras.remove(0);
+				lurkers.add(morpher);
 				return true;
 			}else if(hydras.isEmpty()){
 				buildOrder.add(0,new BuildCommand(hydralisk));
@@ -368,6 +382,7 @@ public class LurkerDrop extends EmptyFixedBot{
 	
 	@Override
 	public void onFrame(){
+		data.refresh();
 		for(Unit u: drones) {
 			  	if(u.isIdle()) {
 			  		ROUnit closestPatch = UnitUtils.getClosest(u, Game.getInstance().getMinerals());
@@ -383,6 +398,16 @@ public class LurkerDrop extends EmptyFixedBot{
 		attack();
 		if(toScout)
 			scout();
+		for(int x = 0; x < myMap.getWidth(); x+=5){
+			for(int y = 0; y < myMap.getHeight(); y+=5){
+				int radius = (int)(data.getRatings()[x][y]);
+				if(radius > 10)
+					Game.getInstance().drawCircleMap(x*32, y*32, radius, Color.GREEN, false);
+				radius = (int)(data.getThreats()[x][y]);
+				if(radius > 10)
+					Game.getInstance().drawCircleMap(x*32, y*32, radius, Color.RED, false);
+			}
+		}
 	}
 	
 	public void scout(){
@@ -438,9 +463,9 @@ public class LurkerDrop extends EmptyFixedBot{
 		}
 		for(Unit u: hydras){
 			if(u.isIdle())
-				armyCount++;
+				armyCount+=2;
 		}
-		if(armyCount >= 15){
+		if(armyCount >= 30){
 			for(Unit u: lings){
 				if(u.isIdle()){
 					TilePosition tp = getTarget(u);
@@ -466,7 +491,7 @@ public class LurkerDrop extends EmptyFixedBot{
 				u.burrow();
 			else if(!defenders.contains(u) && u.isBurrowed() && !close(enemyUnits,u.getTilePosition()))
 				u.unburrow();
-			if(!u.isBurrowed())
+			if(!u.isBurrowed()&&!u.isLoaded())
 				unborrowedLurkers++;
 		}
 		
@@ -481,7 +506,6 @@ public class LurkerDrop extends EmptyFixedBot{
 		}
 		if(mover != null){
 			for(Unit u: lurkers) {
-				if(u.isMorphing()) continue;
 				if(!defenders.contains(u) && mover.getLoadedUnits().size() < 2&&!u.isBurrowed()) {
 					mover.load(u);
 				}
@@ -491,7 +515,7 @@ public class LurkerDrop extends EmptyFixedBot{
 		for(Unit m: ovies){
 			if(m.getLoadedUnits().size() > 0 && close(enemyUnits,m.getTilePosition())){
 				//dropNow(m);
-				System.out.println("unloading");
+				//System.out.println("unloading");
 				boundaries.put(m, true);
 				//continue;
 			}
@@ -501,7 +525,7 @@ public class LurkerDrop extends EmptyFixedBot{
 					TilePosition home = bases.get(0).getTilePosition();
 					if(!close(m.getTilePosition(),home))
 						m.move(home);
-					System.out.println("returning home");
+					//System.out.println("returning home");
 				}
 			}
 			TilePosition t = getTarget(m);
@@ -577,7 +601,7 @@ public class LurkerDrop extends EmptyFixedBot{
 	
 	public void gasFrame(){
 		if(myExtractor == null && spawnPool!=null && (spawnPool.isBeingConstructed()||spawnPool.isCompleted())){
-			if(extractDrone==null)
+			if(extractDrone==null && !drones.isEmpty())
 				extractDrone = drones.get(0);
 			ROUnit closestPatch = UnitUtils.getClosest(extractDrone, Game.getInstance().getGeysers());
 			if (closestPatch != null) {
@@ -599,7 +623,7 @@ public class LurkerDrop extends EmptyFixedBot{
 					gas++;
 				}
 			}
-			System.out.println(gas);
+			//System.out.println(gas);
 		}
 	}
 	
@@ -608,11 +632,12 @@ public class LurkerDrop extends EmptyFixedBot{
 		super.onStart();
 		setUpBuildOrder();
 		scouted.add(Game.getInstance().self().getStartLocation());
+		data = new DropData(myMap.getWidth(),myMap.getHeight());
 	}
 	
 	@Override
 	public void onUnitShow(ROUnit unit){
-		
+		data.addUnit(unit);
 	
 		if(unit.getType().isBuilding()){
 			myMap.addBuilding(unit);
@@ -688,10 +713,10 @@ public class LurkerDrop extends EmptyFixedBot{
 			hydras.add(u);
 		}
 		if(u.getType().equals(UnitType.getUnitType(lurker))) {
-			if(lurkers.size() < 3)
+			if(defenders.size() < 3)
 				defenders.add(u);
-			lurkers.add(u);
-			hydras.remove(u);
+			//lurkers.add(u);
+			//hydras.remove(u);
 		}
 		if(u.getType().equals(UnitType.getUnitType(spawningPool)))
 			spawnPool = u;
@@ -703,6 +728,7 @@ public class LurkerDrop extends EmptyFixedBot{
 	
 	@Override
 	public void onUnitDestroy(ROUnit unit) {
+		data.removeUnit(unit);
 		super.onUnitDestroy(unit);
 		if(Game.getInstance().self().isEnemy(unit.getPlayer())){
 			enemyUnits.remove(unit);
@@ -713,8 +739,12 @@ public class LurkerDrop extends EmptyFixedBot{
 			bases.remove(u);
 		if(u.getType().equals(UnitType.getUnitType(larva)))
 			larvae.remove(u);
-		if(u.getType().equals(UnitType.getUnitType(drone)))
+		if(u.getType().equals(UnitType.getUnitType(drone))){
 			drones.remove(u);
+			if(extractDrone!=null&&u.equals(extractDrone)){
+				extractDrone = null;
+			}
+		}
 		if(u.getType().equals(UnitType.getUnitType(overlord))){
 			ovies.remove(u);
 			if(!buildOrder.isEmpty()&&

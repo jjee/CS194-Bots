@@ -2,9 +2,12 @@ package fixedBots;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Order;
 import org.bwapi.proxy.model.Position;
+import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
 
@@ -40,7 +43,7 @@ public class DropAgent {
 		if(!u.getTilePosition().equals(myTarget)){
 			pickup = false;
 		}
-		if(me.getLoadedUnits().contains(u)||u.isLoaded()){
+		if(me.getLoadedUnits().contains(u)||u.isLoaded()||u.isBurrowed()){
 			pickup = false;
 			move = false;
 			waiting = false;
@@ -84,7 +87,7 @@ public class DropAgent {
 		if(!drop){
 			System.out.println(me + "dropping at " + loc);
 		}
-		if(!close(me.getTilePosition(),loc)){
+		if(!closeTile(me.getTilePosition(),loc)){
 			if(!drop)
 				move(loc);
 			else
@@ -99,6 +102,12 @@ public class DropAgent {
 		}
 		drop = true;
 		return true;
+	}
+	
+	public boolean closeTile(TilePosition t1, TilePosition t2){
+		int x = Math.abs(t1.x() - t2.x());
+		int y = Math.abs(t1.y() - t2.y());
+		return x+y < 5;
 	}
 	
 	public void drop(){ drop(myTarget);}
@@ -137,8 +146,8 @@ public class DropAgent {
 		return path.get(0);
 	}
 	private Position toDropPosition(TilePosition a){
-		return new Position(a.x()*32+(int)(Math.random()*300 - 150),
-				a.y()*32 + (int)(Math.random()*300 - 150));
+		return new Position(a.x()*32+(int)(Math.random()*60 - 30)*4,
+				a.y()*32 + (int)(Math.random()*60 - 30)*4);
 	}
 	private boolean close(TilePosition a, TilePosition b){
 		return a.getDistance(b) < 3;

@@ -174,7 +174,16 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 				cheeserDefenseMode = true;
 				cheeserAttackMode = false;
 				sparkySteps++;
-				if (sparkySteps % 200 == 0 && sparkySteps >= 2000 && sparkySteps < 5000)
+				boolean toAdd = true;
+				for (Position p : minePoints) {
+					if (sparky.getDistance(p) < 250) {
+						toAdd = false;
+						break;
+					}
+				}
+				if (sparky.getDistance(new Position(myHome)) < 800 || sparky.getDistance(getClosestEnemyBuilding(sparky.getPosition())) < 800)
+					toAdd = false;
+				if (toAdd)
 					minePoints.add(sparky.getPosition());
 			}
 			else if (enemyBuildings.contains(u)) {
@@ -184,7 +193,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 				}
 			}
 		}
-		if(cheeserDefenseMode == false && cheeserAttackMode == false) {
+		if (cheeserDefenseMode == false && cheeserAttackMode == false) {
 			sparky.rightClick(enemyBases.get(0));
 		}
 		
@@ -298,7 +307,12 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		int numWraiths = UnitUtils.getAllMy(UnitType.TERRAN_WRAITH).size();
 		for (ROUnit w: UnitUtils.getAllMy(UnitType.TERRAN_WRAITH)) {
 			if (!enemyBuildings.isEmpty() && w.isIdle() && (numWraiths > 2 || w.getDistance(rallyPoints.get(2)) > 1000)) {
-				UnitUtils.assumeControl(w).useTech(TechType.CLOAKING_FIELD);
+				for (ROUnit u: Game.getInstance().getAllUnits()) {
+					if (me.isEnemy(u.getPlayer()) && (w.equals(u.getTarget()) || w.equals(u.getOrderTarget()))) {
+						UnitUtils.assumeControl(w).useTech(TechType.PERSONNEL_CLOAKING);
+						break;
+					}
+				}
 				UnitUtils.assumeControl(w).attackMove(getClosestEnemyBuilding(w.getPosition()));
 			}
 			else if (w.isIdle() && w.getDistance(rallyPoints.get(2)) > 300)
@@ -400,7 +414,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 				target = enemyBuildings.get(0).getLastKnownPosition();
 			
 			//Load vultures, other units
-			if (d.getLoadedUnits().size() < 4 && dropships.get(d) == 0) {
+			if (d.getLoadedUnits().size() < 4 && dropships.get(d) == 0 && d.isIdle()) {
 				for (Unit v : vultures.keySet()) {
 					if (!v.isLoaded() && vultures.get(v) == 0) {
 						d.load(v);

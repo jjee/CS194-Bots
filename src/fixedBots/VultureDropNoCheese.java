@@ -36,10 +36,11 @@ public class VultureDropNoCheese extends AbstractCerebrate implements Strategy {
 	private Unit sparky;
 	private int sparkySteps = 0;
 	private int sparkyLives = 3;
+	private int sparkyMode = 0;
 	private boolean cheeserDefenseMode = false;
 	private boolean cheeserAttackMode = false;
 	
-	boolean toScout = true;
+	boolean toScout = false;
 	private TilePosition scoutTarget;
 	private HashSet<TilePosition> scouted = new HashSet<TilePosition>();
 	private ArrayList<Unit> enemyBuildings = new ArrayList<Unit>();
@@ -669,8 +670,29 @@ public class VultureDropNoCheese extends AbstractCerebrate implements Strategy {
 	public void onFrame() {
 		if (toScout)
 			scout();
-		else
+		else if (sparky != null) {
+			if (sparkyMode == 0) {
+				sparkyMode = 1;
+			}
+			if (sparkyMode == 1) {
+				if (sparky.getDistance(new Position(myHome)) < 800)
+					sparkyMode = 2;
+				else {
+					boolean toAdd = true;
+					for (Position p : minePoints) {
+						if (sparky.getDistance(p) < 250) {
+							toAdd = false;
+							break;
+						}
+					}
+					if (sparky.getDistance(new Position(myHome)) < 800 || sparky.getDistance(getClosestEnemyBuilding(sparky.getPosition())) < 800)
+						toAdd = false;
+					if (toAdd)
+						minePoints.add(sparky.getPosition());
+				}					
+			}
 			workers.put(sparky, 0);
+		}
 		  
 		rebuild();
 		supplyWorkersAndBunkers();
@@ -721,17 +743,23 @@ public class VultureDropNoCheese extends AbstractCerebrate implements Strategy {
 				myBase = UnitUtils.assumeControl(u);
 			}
 		}
-
-		for (Unit w : workers.keySet()) {
-			sparky = w;
-			workers.remove(w);
-			break;
-		}
 	}
 
 	public void onUnitCreate(ROUnit unit) {
-		if (unit.getType().isWorker() && !unit.equals(sparky))
+		if (unit.getType().isWorker()) {
 			workers.put(UnitUtils.assumeControl(unit), 0);
+			if (workers.size() == 7 && toScout == false) {
+				for (Unit w : workers.keySet()) {
+					if (!w.isConstructing()) {
+						workers.remove(w);
+						sparky = w;
+						toScout = true;
+						break;
+					}
+				}
+				System.out.println("yay");
+			}
+		}
 		else if (unit.getType().equals(UnitType.TERRAN_VULTURE))
 			vultures.put(UnitUtils.assumeControl(unit), 0); 
 		else if (unit.getType().equals(UnitType.TERRAN_DROPSHIP))

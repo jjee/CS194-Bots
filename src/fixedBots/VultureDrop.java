@@ -66,44 +66,52 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		initializeJython();
 		  return Arrays.<Cerebrate>asList(jython,this);
 	}
-	
-	public boolean placeAndBuild(String unit) {		
-		Unit builder = null;
-		int numBuilders = 2;
-		for (Unit w : workers.keySet()) {
-			if (workers.get(w) == 0 && !w.isConstructing()) {
-				builder = w;
-				break;
-			}
-			if (workers.get(w) != 1)
-				numBuilders--;
-			if (numBuilders <= 0)
-				break;
-		}
-		if (builder == null) {
+		
+	public boolean placeAndBuild(UnitType unit, boolean isCommandCenter) {		
+		Unit builder = selectWorker();
+		if (builder == null)
 			return false;
-		}
 		
 		for (int i = 0; i < numIterations; i++) {
 			int x = rand.nextInt(2*buildDistance)-buildDistance;
 			int y = rand.nextInt(2*buildDistance)-buildDistance;
 			TilePosition pos = new TilePosition(myHome.x()+x, myHome.y()+y);
 			TilePosition add_pos = new TilePosition(myHome.x()+x+2, myHome.y()+y+1);
-			if (builder.canBuildHere(pos, UnitType.getUnitType(unit))) {
-				if (unit.equals("Terran Factory") && UnitUtils.getAllMy(UnitType.TERRAN_MACHINE_SHOP).size() == 0 || unit.equals("Terran Starport")) {
-					if (builder.canBuildHere(add_pos, UnitType.getUnitType(unit))) {
-						  builder.build(pos, UnitType.getUnitType(unit));
+			if (isCommandCenter && builder.canBuildHere(myHome, UnitType.TERRAN_COMMAND_CENTER)) {
+				builder.build(myHome, UnitType.TERRAN_COMMAND_CENTER);
+				return true;
+			}
+			else if (builder.canBuildHere(pos, unit)) {
+				if (unit.equals(UnitType.TERRAN_FACTORY) && UnitUtils.getAllMy(UnitType.TERRAN_MACHINE_SHOP).size() == 0 || unit.equals(UnitType.TERRAN_STARPORT)) {
+					if (builder.canBuildHere(add_pos, unit)) {
+						  builder.build(pos, unit);
 						  return true;
 					  }
 				}
 				else {
-					builder.build(pos, UnitType.getUnitType(unit));
+					builder.build(pos, unit);
 					return true;					  
 				}
 			}
 		}
 		buildDistance++;
 		return false;
+	}
+
+	public Unit selectWorker() {
+		Unit worker = null;
+		int numWorkers = 2;
+		for (Unit w : workers.keySet()) {
+			if (workers.get(w) == 0 && !w.isConstructing()) {
+				worker = w;
+				break;
+			}
+			if (workers.get(w) != 1)
+				numWorkers--;
+			if (numWorkers <= 0)
+				break;
+		}
+		return worker;
 	}
 	
 	public boolean minesClear(Position loc) {
@@ -191,13 +199,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		
 		//Refinery
 		if (UnitUtils.getAllMy(UnitType.TERRAN_REFINERY).size() == 0 && UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size() > 0) {
-			Unit builder = null;
-			for (Unit w : workers.keySet()) {
-				if (workers.get(w) == 0) {
-					builder = w;
-					break;
-				}
-			}
+			Unit builder = selectWorker();
 			if (builder != null) {
 				ROUnit closestPatch = UnitUtils.getClosest(myBase, Game.getInstance().getGeysers());
 				if (closestPatch != null) {
@@ -207,8 +209,8 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		}
 		  
 		//Starport if ready
-		if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() > 0)
-			placeAndBuild("Terran Starport");
+		if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() > 0 && UnitUtils.getAllMy(UnitType.TERRAN_STARPORT).size() < 1)
+			placeAndBuild(UnitType.TERRAN_STARPORT, false);
 		for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_STARPORT))
 			UnitUtils.assumeControl(s).buildAddon(UnitType.TERRAN_CONTROL_TOWER);
 	  
@@ -221,7 +223,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 	  
 		//Factory
 		if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() < 1) {
-			  placeAndBuild("Terran Factory");
+			  placeAndBuild(UnitType.TERRAN_FACTORY, false);
 		}
 		for (ROUnit f : UnitUtils.getAllMy(UnitType.TERRAN_FACTORY)) {
 			UnitUtils.assumeControl(f).buildAddon(UnitType.TERRAN_MACHINE_SHOP);
@@ -241,7 +243,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		
 		//Barracks
 		if (UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size() == 0) {
-			placeAndBuild("Terran Barracks");
+			placeAndBuild(UnitType.TERRAN_BARRACKS, false);
 		}	
 	}
 	
@@ -259,15 +261,14 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		}
 		
 		//Starport
-		if (UnitUtils.getAllMy(UnitType.TERRAN_STARPORT).size() == 0 && UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() > 0) {
-			placeAndBuild("Terran Starport");
-		}
+		if (UnitUtils.getAllMy(UnitType.TERRAN_STARPORT).size() == 0 && UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() > 0)
+			placeAndBuild(UnitType.TERRAN_STARPORT, false);
 		for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_STARPORT))
 			UnitUtils.assumeControl(s).buildAddon(UnitType.TERRAN_CONTROL_TOWER);
 		
 		//More factories
 		if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() < 2)
-			placeAndBuild("Terran Factory");
+			placeAndBuild(UnitType.TERRAN_FACTORY, false);
 		for (ROUnit f : UnitUtils.getAllMy(UnitType.TERRAN_FACTORY)) {
 			UnitUtils.assumeControl(f).buildAddon(UnitType.TERRAN_MACHINE_SHOP);
 		}
@@ -296,7 +297,8 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		}
 		int numWraiths = UnitUtils.getAllMy(UnitType.TERRAN_WRAITH).size();
 		for (ROUnit w: UnitUtils.getAllMy(UnitType.TERRAN_WRAITH)) {
-			if (numWraiths > 2 && !enemyBuildings.isEmpty() && w.isIdle() || w.getDistance(rallyPoints.get(2)) > 1000) {
+			if (!enemyBuildings.isEmpty() && w.isIdle() && (numWraiths > 2 || w.getDistance(rallyPoints.get(2)) > 1000)) {
+				UnitUtils.assumeControl(w).useTech(TechType.CLOAKING_FIELD);
 				UnitUtils.assumeControl(w).attackMove(getClosestEnemyBuilding(w.getPosition()));
 			}
 			else if (w.isIdle() && w.getDistance(rallyPoints.get(2)) > 300)
@@ -305,7 +307,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		
 		//Armory
 		if (UnitUtils.getAllMy(UnitType.TERRAN_ARMORY).size() < 1) {
-			placeAndBuild("Terran Armory");
+			placeAndBuild(UnitType.TERRAN_ARMORY, false);
 		}
 		for (ROUnit a : UnitUtils.getAllMy(UnitType.TERRAN_ARMORY)) {
 			UnitUtils.assumeControl(a).upgrade(UpgradeType.TERRAN_VEHICLE_WEAPONS);
@@ -331,7 +333,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		
 		//More factories
 		if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() < 3)
-			placeAndBuild("Terran Factory");
+			placeAndBuild(UnitType.TERRAN_FACTORY, false);
 		for (ROUnit f : UnitUtils.getAllMy(UnitType.TERRAN_FACTORY)) {
 			UnitUtils.assumeControl(f).buildAddon(UnitType.TERRAN_MACHINE_SHOP);
 		}
@@ -347,8 +349,10 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			k++;
 		}
 		for (ROUnit s: UnitUtils.getAllMy(UnitType.TERRAN_SIEGE_TANK_TANK_MODE)) {
-			if (!enemyBuildings.isEmpty() && s.isIdle())
+			if (!enemyBuildings.isEmpty() && s.isIdle()) {
+				UnitUtils.assumeControl(s).useTech(TechType.NONE);
 				UnitUtils.assumeControl(s).attackMove(getClosestEnemyBuilding(s.getPosition()));
+			}
 			if (!enemyBuildings.isEmpty() && s.getDistance(getClosestEnemyBuilding(s.getPosition())) < 300)
 				UnitUtils.assumeControl(s).useTech(TechType.TANK_SIEGE_MODE);
 		}
@@ -361,7 +365,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 	public void vultureDrop() {
 		//Build second starport
 		if (UnitUtils.getAllMy(UnitType.TERRAN_STARPORT).size() < 2) {
-			placeAndBuild("Terran Starport");
+			placeAndBuild(UnitType.TERRAN_STARPORT, false);
 		}
 		for (ROUnit s : UnitUtils.getAllMy(UnitType.TERRAN_STARPORT))
 			UnitUtils.assumeControl(s).buildAddon(UnitType.TERRAN_CONTROL_TOWER);
@@ -394,7 +398,7 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			}
 			else if (!enemyBuildings.isEmpty())
 				target = enemyBuildings.get(0).getLastKnownPosition();
-
+			
 			//Load vultures, other units
 			if (d.getLoadedUnits().size() < 4 && dropships.get(d) == 0) {
 				for (Unit v : vultures.keySet()) {
@@ -414,19 +418,19 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 				}
 			}
 			
-			//Go to a corner
-			if (d.getLoadedUnits().size() >= 4 && dropships.get(d) == 0)
+			//Go to an intermediary location
+			if (d.getLoadedUnits().size() >= 3 && dropships.get(d) == 0)
 				dropships.put(d, 1);
 			else if (dropships.get(d) == 1 && d.isIdle()) {
 				int i = rand.nextInt(2);
 				d.move(intermediaries.get(i));
 				dropships.put(d, i+2);
 			}
-			if (dropships.get(d) == 2 && (d.getDistance(intermediaries.get(0)) < 100 || d.getDistance(target) < 200)) {
+			if (dropships.get(d) == 2 && (d.getDistance(intermediaries.get(0)) < 100 || d.getDistance(target) < 100)) {
 				dropships.put(d, 4);
 				d.stop();
 			}
-			else if (dropships.get(d) == 3 && (d.getDistance(intermediaries.get(1)) < 100 || d.getDistance(target) < 200)) {
+			else if (dropships.get(d) == 3 && (d.getDistance(intermediaries.get(1)) < 100 || d.getDistance(target) < 100)) {
 				dropships.put(d, 4);
 				d.stop();
 			}
@@ -440,7 +444,10 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 			}
 			if (dropships.get(d) == 5) {
 				ROUnit closestPatch = UnitUtils.getClosest(d.getPosition(), Game.getInstance().getMinerals());
-				d.unloadAll(closestPatch.getPosition().add(rand.nextInt(200)-100, rand.nextInt(200)-100));
+				if (closestPatch != null && d.getDistance(closestPatch) < 500)
+					d.unloadAll(closestPatch.getPosition().add(rand.nextInt(200)-100, rand.nextInt(200)-100));
+				else 
+					d.unloadAll(target.add(rand.nextInt(200)-100, rand.nextInt(200)-100));
 				for (ROUnit u : d.getLoadedUnits()) {
 					if (u.getType().equals(UnitType.TERRAN_VULTURE))
 						vultures.put((Unit) u, 1);
@@ -490,18 +497,13 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		}
 	}
 	
-	public void onFrame() {
-		if (toScout)
-			scout();
-		else
-			cheese();
-		  
-		//Rebuild list
+	//If necessary, rebuild any destroyed units
+	public void rebuild() {
 		if (rebuildList.size() > 0) {
 			UnitType toBuild = rebuildList.get(0);
 			boolean tryRebuild = true;
 			if (toBuild.equals(UnitType.TERRAN_COMMAND_CENTER)) {
-				tryRebuild = placeAndBuild("Terran Command Center");
+				tryRebuild = placeAndBuild(UnitType.TERRAN_COMMAND_CENTER, true);
 			}
 			else if (toBuild.equals(UnitType.TERRAN_REFINERY)) {
 				Unit builder = null;
@@ -523,13 +525,18 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 				else
 					tryRebuild = false;
 			}
+			else if (UnitUtils.getAllMy(toBuild).size() < 1) {
+				tryRebuild = placeAndBuild(toBuild, false);
+			}
 			if (tryRebuild)
 				rebuildList.remove(0);
 		}
+	}
 
+	public void supplyWorkersAndBunkers() {
 		//Make sure have enough supply depots
 		if (me.supplyUsed() >= me.supplyTotal()-5)
-			placeAndBuild("Terran Supply Depot");
+			placeAndBuild(UnitType.TERRAN_SUPPLY_DEPOT, false);
 		  
 		//Make sure have enough workers
 		if (me.minerals() > 50 && workers.size() < 12 && UnitUtils.getAllMy(UnitType.TERRAN_SUPPLY_DEPOT).size() > 0) {
@@ -539,57 +546,19 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 		
 		//Bunkers
 		if (UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size() > 0 && UnitUtils.getAllMy(UnitType.TERRAN_BUNKER).size() < 2) {
-			Unit builder = null;
-			int numBuilders = 2;
-			for (Unit w : workers.keySet()) {
-				if (workers.get(w) == 0 && !w.isConstructing()) {
-					builder = w;
-					break;
-				}
-				if (--numBuilders <= 0)
-					break;
-			}
+			Unit builder = selectWorker();
 			if (builder != null) {
 				int x = rand.nextInt(6)-3;
 				int y = rand.nextInt(6)-3;
 				builder.build((new TilePosition(rallyPoints.get(1))).add(x, y), UnitType.TERRAN_BUNKER);
 			}
 		}
-		  
-		//Game mode
-		if (gameMode == 0) {
-			if (UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() > 0 || UnitUtils.getAllMy(UnitType.TERRAN_STARPORT).size() > 0) {
-				gameMode = 1;
-				System.out.println("early game");
-			}
-			else
-				earlyBuildOrder();
-		}
-		else if (gameMode == 1) {
-			if (dropships.size() > 0) {
-				gameMode = 2;
-				System.out.println("intermediate game");
-			}
-			else
-				intermediateBuildOrder();
-		}
-		else if (gameMode == 2) {
-			if (UnitUtils.getAllMy(UnitType.TERRAN_DROPSHIP).size() > 1) {
-				gameMode = 3;
-				System.out.println("late game");
-			}
-			vultureDrop();
-		}
-		else if (gameMode == 3) {
-			lateBuildOrder();
-			vultureDrop();
-		}
-		
-		vultureMicro();
-		
+	}
+
+	public void barracksAndMarines() {
 		//If have enough minerals, make more barracks
 		if (me.minerals() > 800)
-			placeAndBuild("Terran Barracks");
+			placeAndBuild(UnitType.TERRAN_BARRACKS, false);
 		  
 		//If have enough minerals, make more marines
 		if (me.minerals() > 200) {
@@ -598,12 +567,24 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 					UnitUtils.assumeControl(b).train(UnitType.TERRAN_MARINE);
 			}
 		}
+		
+		//Get rid of enemy workers
+		ROUnit enemyWorker = null;
+		for (ROUnit u: Game.getInstance().getAllUnits()) {
+			if (me.isEnemy(u.getPlayer()) && u.getType().isWorker() && u.getDistance(new Position(myHome)) < 100) {
+				enemyWorker = u;
+				break;
+			}
+		}
 		  
 		//Rally marines
 		int numMarines = UnitUtils.getAllMy(UnitType.TERRAN_MARINE).size();
 		for (ROUnit m: UnitUtils.getAllMy(UnitType.TERRAN_MARINE)) {
 			if (numMarines > 12 && !enemyBuildings.isEmpty() && m.isIdle()) {
 				UnitUtils.assumeControl(m).attackMove(getClosestEnemyBuilding(m.getPosition()));
+			}
+			else if (m.isIdle() && enemyWorker != null) {
+				UnitUtils.assumeControl(m).attack(enemyWorker);
 			}
 			else if (m.isIdle() && m.getDistance(rallyPoints.get(2)) > 300)
 				UnitUtils.assumeControl(m).attackMove(rallyPoints.get(2));
@@ -614,8 +595,10 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 					UnitUtils.assumeControl(b).load(m);
 			}
 		}
-		  
-		//Mine mine mine
+	}
+	
+	public void mineMineralsAndGas() {
+		//Minerals
 		int numOnGas = 0;
 		for (Unit u: workers.keySet()) {
 			if (u.isIdle()) {
@@ -667,6 +650,49 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 				}
 			}
 		}
+	}
+
+	public void onFrame() {
+		if (toScout)
+			scout();
+		else
+			cheese();
+		  
+		rebuild();
+		supplyWorkersAndBunkers();
+		  
+		//Game mode
+		if (gameMode == 0) {
+			if (UnitUtils.getAllMy(UnitType.TERRAN_STARPORT).size() > 0 || UnitUtils.getAllMy(UnitType.TERRAN_FACTORY).size() > 0  && UnitUtils.getAllMy(UnitType.TERRAN_BUNKER).size() > 1) {
+				gameMode = 1;
+				System.out.println("early game");
+			}
+			else
+				earlyBuildOrder();
+		}
+		else if (gameMode == 1) {
+			if (dropships.size() > 0) {
+				gameMode = 2;
+				System.out.println("intermediate game");
+			}
+			else
+				intermediateBuildOrder();
+		}
+		else if (gameMode == 2) {
+			if (dropships.size() > 1) {
+				gameMode = 3;
+				System.out.println("late game");
+			}
+			vultureDrop();
+		}
+		else if (gameMode == 3) {
+			vultureDrop();
+			lateBuildOrder();
+		}
+		
+		vultureMicro();		
+		barracksAndMarines();		  
+		mineMineralsAndGas();
 	}
 
 	public void onStart() {
@@ -732,24 +758,32 @@ public class VultureDrop extends AbstractCerebrate implements Strategy {
 	}
 
 	public void onUnitMorph(ROUnit unit) {
-		  
+		if (unit.getType().isBuilding() && unit.getPlayer().isEnemy(me) && !enemyBuildings.contains((Unit)unit))
+			enemyBuildings.add((Unit)unit);
  	}
 		
 	public void onUnitShow(ROUnit unit) {
 		if (unit.getType().isBuilding() && unit.getPlayer().isEnemy(me)) {
 			if (!enemyBuildings.contains((Unit)unit))
 				enemyBuildings.add((Unit)unit);
-			if (unit.getType().isResourceDepot()) {
+			if (unit.getType().isResourceDepot() && !enemyBases.contains(unit.getPosition())) {
 				enemyBases.add(unit.getPosition());
 				if (intermediaries.size() == 0) {
-					if (unit.getPosition().x() > myBase.getPosition().x())
-						intermediaries.add(new Position(unit.getPosition().x()+200, myBase.getPosition().y()));
-					else
-						intermediaries.add(new Position(unit.getPosition().x()-200, myBase.getPosition().y()));
-					if (unit.getPosition().y() > myBase.getPosition().y())
-						intermediaries.add(new Position(myBase.getPosition().x(), unit.getPosition().y()+200));
-					else
-						intermediaries.add(new Position(myBase.getPosition().x(), unit.getPosition().y()-200));
+					ROUnit closestPatch = UnitUtils.getClosest(unit, Game.getInstance().getMinerals());
+					if (closestPatch != null && unit.getDistance(closestPatch) < 500) {
+						intermediaries.add(new Position(closestPatch.getPosition().x(), myBase.getPosition().y()));
+						intermediaries.add(new Position(myBase.getPosition().x(), closestPatch.getPosition().y()));
+					}
+					else {
+						if (unit.getPosition().x() < myBase.getPosition().x())
+							intermediaries.add(new Position(unit.getPosition().x()+150, myBase.getPosition().y()));
+						else
+							intermediaries.add(new Position(unit.getPosition().x()-150, myBase.getPosition().y()));
+						if (unit.getPosition().y() > myBase.getPosition().y())
+							intermediaries.add(new Position(myBase.getPosition().x(), unit.getPosition().y()+150));
+						else
+							intermediaries.add(new Position(myBase.getPosition().x(), unit.getPosition().y()-150));
+					}
 				}
 			}
 		}

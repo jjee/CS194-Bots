@@ -1,5 +1,76 @@
 package finalBot;
 
-public class Tools {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
+import org.bwapi.proxy.model.Game;
+import org.bwapi.proxy.model.Position;
+import org.bwapi.proxy.model.ROUnit;
+import org.bwapi.proxy.model.TilePosition;
+import org.bwapi.proxy.model.Unit;
+
+public class Tools {
+	private static final int TILE_SIZE = 32;
+
+	public static int getMapDistance(){
+		return 0;
+	}
+	
+	public static boolean close(ROUnit u, TilePosition t, int dist){
+		TilePosition uLoc = u.getTilePosition();
+		return Math.abs(uLoc.x()-t.x()) + Math.abs(uLoc.y()-t.y()) < dist;
+	}
+	
+	public static boolean close(ROUnit u, Set<ROUnit> targets, int dist){
+		for(ROUnit target: targets){
+			if(close(u,target.getTilePosition(),dist))
+				return true;
+		}
+		return false;
+	}
+	
+	public static Position randomNearby(ROUnit u, int dist){
+		int dx = (int)(Math.random()*dist-dist/2);
+		int dy = (int)(Math.random()*dist-dist/2);
+		int x = u.getPosition().x();
+		int y = u.getPosition().y();
+		int newx = x+dx;
+		int newy = y+dy;
+		while(true){
+			if(Game.getInstance().mapHeight()*TILE_SIZE>newy 
+					&& Game.getInstance().mapWidth()*TILE_SIZE > newx
+					&& newx > 0 && newy > 0)
+				return new Position(newx,newy);
+		}
+	}
+	
+	public static List<ROUnit> enemyUnits(){
+		List<ROUnit> units = new ArrayList<ROUnit>();
+		for(ROUnit u: Game.getInstance().getAllUnits()){
+			if(Game.getInstance().self().isEnemy(u.getPlayer()))
+				units.add(u);
+		}
+		return units;
+	}
+	
+	
+	public static ROUnit findClosest(List<Unit> units, TilePosition p){
+		int x = p.x()*TILE_SIZE;
+		int y = p.y()*TILE_SIZE;
+		return findClosest(units,new Position(x,y));
+	}
+	
+	public static ROUnit findClosest(List<Unit> units, Position p){
+		double best = 10000;
+		ROUnit bestu = null;
+		for(ROUnit u: units){
+			double d = u.getDistance(p);
+			if(d < best){
+				best = d;
+				bestu = u;
+			}
+		}
+		return bestu;
+	}
 }

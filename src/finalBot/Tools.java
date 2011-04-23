@@ -10,6 +10,8 @@ import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
 
+import edu.berkeley.nlp.starcraft.util.UnitUtils;
+
 public class Tools {
 	private static final int TILE_SIZE = 32;
 
@@ -19,6 +21,10 @@ public class Tools {
 	
 	public static boolean close(ROUnit u, TilePosition t, int dist){
 		TilePosition uLoc = u.getTilePosition();
+		return Math.abs(uLoc.x()-t.x()) + Math.abs(uLoc.y()-t.y()) < dist;
+	}
+	
+	public static boolean close(TilePosition uLoc, TilePosition t, int dist){
 		return Math.abs(uLoc.x()-t.x()) + Math.abs(uLoc.y()-t.y()) < dist;
 	}
 	
@@ -81,5 +87,26 @@ public class Tools {
 			}
 		}
 		return bestu;
+	}
+	
+	public static List<Unit> convertRO(List<ROUnit> units){
+		List<Unit> retList = new ArrayList<Unit>();
+		for(ROUnit u: units){
+			retList.add(UnitUtils.assumeControl(u));
+		}
+		return retList;
+	}
+	
+	public static TilePosition calcAvgLoc(Set<Unit> units){
+		int sumX = 0, sumY = 0;
+		int unitCount = units.size();
+		if (unitCount==0) return null;
+		
+		for(Unit u: units){
+			sumX = sumX + u.getTilePosition().x();
+			sumY = sumY + u.getTilePosition().y();
+		}
+		
+		return new TilePosition(sumX/unitCount,sumY/unitCount);
 	}
 }

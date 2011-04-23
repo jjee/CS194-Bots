@@ -3,6 +3,7 @@ package finalBot;
 import java.util.Arrays;
 import java.util.List;
 import org.bwapi.proxy.model.Game;
+import org.bwapi.proxy.model.Player;
 import org.bwapi.proxy.model.ROUnit;
 import edu.berkeley.nlp.starcraft.AbstractCerebrate;
 import edu.berkeley.nlp.starcraft.Cerebrate;
@@ -13,56 +14,69 @@ import edu.berkeley.nlp.starcraft.scripting.Thunk;
 
 public class FinalBot extends AbstractCerebrate implements Strategy {
 	JythonInterpreter jython = new JythonInterpreter();
-	
+	Governor governor;
+	Commander commander;
+	Spy spy;
+	Player me;
 
 	@Override
-  public List<Cerebrate> getTopLevelCerebrates() {
+	public List<Cerebrate> getTopLevelCerebrates() {
 		initializeJython();
-	  return Arrays.<Cerebrate>asList(jython,this);
-  }
+		return Arrays.<Cerebrate>asList(jython,this);
+	}
 
 
 	@Override
-  public void onFrame() {
-	
-  }
+	public void onFrame() {
+		spy.act();
+		governor.act();
+		commander.act();
+	}
 
 	@Override
-  public void onStart() {
-	
-  }
+	public void onStart() {
+		governor = new Governor();
+		commander = new Commander();
+		spy = new Spy();
+		me = Game.getInstance().self();
+		spy.setCommander(commander);
+		spy.setGovernor(governor);
+		commander.setGovernor(governor);
+		commander.setSpy(spy);
+		governor.setCommander(commander);
+		governor.setSpy(spy);
+	}
 
 	@Override
-  public void onUnitCreate(ROUnit unit) {
-	
-  }
+	public void onUnitCreate(ROUnit unit) {
+	}
 
 	@Override
-  public void onUnitDestroy(ROUnit unit) {
-	  
-  }
+	public void onUnitDestroy(ROUnit unit) {
+
+	}
 
 	@Override
-  public void onUnitHide(ROUnit unit) {
-	  
-  }
+	public void onUnitHide(ROUnit unit) {
+
+	}
 
 	@Override
-  public void onUnitMorph(ROUnit unit) {
-	  
-  }
-	
-	@Override
-  public void onUnitShow(ROUnit unit) {
-	  
-  }
-	
+	public void onUnitMorph(ROUnit unit) {
+
+	}
 
 	@Override
-  public void onEnd(boolean isWinnerFlag) {
-	  
-  }
-	
+	public void onUnitShow(ROUnit unit) {
+
+	}
+
+
+	@Override
+	public void onEnd(boolean isWinnerFlag) {
+
+	}
+
 	// Feel free to add command and things here.
 	// bindFields will bind all member variables of the object
 	// commands should be self explanatory...
@@ -71,23 +85,23 @@ public class FinalBot extends AbstractCerebrate implements Strategy {
 		jython.bind("game", Game.getInstance());
 		jython.bindIntCommand("speed",new Command<Integer>() {
 			@Override
-      public void call(Integer arg) {
+			public void call(Integer arg) {
 				Game.getInstance().printf("Setting speed to %d",arg);
-	      Game.getInstance().setLocalSpeed(arg);	      
-      }
+				Game.getInstance().setLocalSpeed(arg);	      
+			}
 		});
 		jython.bindThunk("reset",new Thunk() {
 
 			@Override
-      public void call() {
+			public void call() {
 				initializeJython();
-	      
-      }
-			
+
+			}
+
 		});
-		
-  }
-	
+
+	}
+
 
 }
 

@@ -58,9 +58,17 @@ public class Commander {
 	
 	public void removeAttacker(Unit u) { //remove unit from attacker class
 		armyUnits.remove(u);
+		if(u.getType()==UnitType.TERRAN_MARINE||u.getType()==UnitType.TERRAN_MEDIC){
+			for(ArmyGroup g: marineMedicGroups){
+				if(g.getUnits().contains(u)){
+					g.remove(u);
+					return;
+				}
+			}
+		}
 	}
 
-	public void attack(ArmyGroup g, TilePosition tp) {//have group attack
+	private void attack(ArmyGroup g, TilePosition tp) {//have group attack
 		Position pos = new Position(tp.x(),tp.y());
 		if(g.isAttacking()){
 			g.setAttack(true);
@@ -96,7 +104,7 @@ public class Commander {
 		}
 	}
 	
-	public void retreat(ArmyGroup g) {//retreat group
+	private void retreat(ArmyGroup g) {//retreat group
 		for(Unit u: g.getUnits()){
 			List<ROUnit> centers = UnitUtils.getAllMy(UnitType.TERRAN_COMMAND_CENTER);
 			if(!centers.isEmpty() && u.isIdle())

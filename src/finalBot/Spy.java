@@ -142,4 +142,8 @@ public class Spy {
 		builder = g;
 	}
 	
+	public void act(){
+		
+	}
+	
 }

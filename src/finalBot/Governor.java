@@ -235,4 +235,8 @@ public class Governor {
 		if (closestRefinery != null)
 			worker.rightClick(closestRefinery);		
 	}
+	
+	public void act(){
+		
+	}
 }

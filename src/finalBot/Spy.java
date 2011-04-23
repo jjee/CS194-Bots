@@ -23,8 +23,8 @@ public class Spy {
 	}
 	
 	// grabs SCV from builder for scouting
-	public void assignScout() {
-		myScout = builder.acquireBuilder();
+	private void assignScout(TilePosition tp) {
+		myScout = builder.pullWorker(tp);
 	}
 	
 	// returns SCV to builder or removes if scout destroyed
@@ -37,7 +37,7 @@ public class Spy {
 	// scans nearby area of tp for enemies
 	public void scan(TilePosition tp) {
 		if(myScout == null)
-			assignScout();
+			assignScout(tp);
 		if(Tools.close((ROUnit) myScout, tp, myScout.getType().sightRange()/32)) {
 			return;
 		}

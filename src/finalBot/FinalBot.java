@@ -5,6 +5,8 @@ import java.util.List;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Player;
 import org.bwapi.proxy.model.ROUnit;
+import org.bwapi.proxy.model.UnitType;
+
 import edu.berkeley.nlp.starcraft.AbstractCerebrate;
 import edu.berkeley.nlp.starcraft.Cerebrate;
 import edu.berkeley.nlp.starcraft.Strategy;
@@ -46,6 +48,11 @@ public class FinalBot extends AbstractCerebrate implements Strategy {
 		commander.setSpy(spy);
 		governor.setCommander(commander);
 		governor.setSpy(spy);
+		
+		List<ROUnit> myWorkers = UnitUtils.getAllMy(UnitType.TERRAN_SCV);
+		for(ROUnit w: myWorkers){
+			governor.addWorker(UnitUtils.assumeControl(w));
+		}
 	}
 
 	@Override

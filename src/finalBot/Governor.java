@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.bwapi.proxy.model.Game;
+import org.bwapi.proxy.model.Player;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
@@ -52,6 +53,35 @@ public class Governor {
 	
 	//TODO
 	public List<Pair<UnitType, TilePosition>> plan() {
+		//to start off, get state stuff
+		int workers = allWorkers.size();
+		Player me = Game.getInstance().self();
+		int availGas = me.gas();
+		int availMinerals = me.minerals();
+		int supply = me.supplyTotal() - me.supplyUsed();
+		int barracks = UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size();
+		int supplyExpecting = 0;
+		boolean hasAcademy = !UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).isEmpty();
+		int comsats = UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).size();
+		int turrets = UnitUtils.getAllMy(UnitType.TERRAN_MISSILE_TURRET).size();
+		
+		for(ROUnit u: builders.keySet()){
+			UnitType willHave = builders.get(u);
+			if (u.isConstructing() && u.getBuildUnit()==null){ //unit going to construct but
+				availMinerals -= willHave.mineralPrice();
+				availGas -= willHave.gasPrice();
+			}
+			if (willHave == UnitType.TERRAN_BARRACKS){
+				barracks++;
+			} else if (willHave == UnitType.TERRAN_SUPPLY_DEPOT){
+				supplyExpecting += 8;
+			} else if (willHave == UnitType.TERRAN_ACADEMY) {
+				hasAcademy = true;
+			}
+		}
+		//not done getting stuff yet ^
+		
+		
 		return null;
 	}
 	
@@ -84,6 +114,9 @@ public class Governor {
 		builders.remove(worker);
 	}
 	
+	/**
+	 * Must be called at very beginning before doing anything else
+	 */
 	public void updateBuilders() {
 		for (ROUnit u : builders.keySet()) {
 			if (u.isIdle())
@@ -94,7 +127,8 @@ public class Governor {
 	private Unit acquireBuilder(TilePosition tp) {
 		List<ROUnit> units = new LinkedList<ROUnit>();
 		for (ROUnit u : allWorkers) {
-			if (!u.isCarryingGas() && !u.isCarryingMinerals() && !u.isConstructing())
+			if (!u.isCarryingGas() && !u.isCarryingMinerals() 
+					&& !u.isConstructing() && !builders.containsKey(u))
 				units.add(u);
 		}
 		if (units.isEmpty())
@@ -112,6 +146,10 @@ public class Governor {
 		Unit builder = acquireBuilder(tp);
 		if (builder == null)
 			return false;
+		if (!builder.isConstructing()&&!Game.getInstance().isVisible(tp)){
+			builder.rightClick(tp);
+			return false;
+		}
 		TilePosition actualTP = selectBuildLoc(type,tp, builder);
 		if (actualTP!=null) {
 			builder.build(tp, type);

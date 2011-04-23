@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.bwapi.proxy.model.Order;
 import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TilePosition;
@@ -65,29 +66,36 @@ public class Commander {
 			g.setAttack(true);
 			attackCount++;
 		}
-		if(!Tools.close(g.getLocation(),tp,20)){
+		Set<Unit> marines = g.getUnits(UnitType.TERRAN_MARINE);
+		Set<Unit> medics = g.getUnits(UnitType.TERRAN_MEDIC);
+		
+		ROUnit target = g.selectTarget();
+		
+		if(!Tools.close(g.getLocation(),tp,40) && !g.underAttack()){
 			for(Unit u: g.getUnits()){
-				if(u.isIdle()){
-					u.rightClick(pos);
+				if(u.isIdle() && u.getType()==UnitType.TERRAN_MARINE){
+					u.attackMove(pos);
+				} else if (u.getType() == UnitType.TERRAN_MEDIC) {
+					u.rightClick(Tools.calcAvgLoc(marines));
 				}
 			}
 		} else {
-			Set<Unit> marines = g.getUnits(UnitType.TERRAN_MARINE);
-			Set<Unit> medics = g.getUnits(UnitType.TERRAN_MEDIC);
 			for(Unit m: marines){
-				m.attackMove(pos);
+				if(m.getOrder() == Order.ATTACK_MOVE || 
+						m.getOrder() ==Order.ATTACK_UNIT) continue;
+				if(target==null)
+					m.attackMove(pos);
+				else
+					m.attackUnit(target);
 			}
 			for(Unit c: medics){
-				if(!Tools.close(c, Tools.calcAvgLoc(marines), 8)){
+				if(c.isIdle()&&!Tools.close(c, Tools.calcAvgLoc(marines), 8)){
 					c.rightClick(Tools.calcAvgLoc(marines));
 				}
 			}
 		}
 	}
 	
-	public void move(ArmyGroup g) {//move group
-	
-	}
 	public void retreat(ArmyGroup g) {//retreat group
 		for(Unit u: g.getUnits()){
 			List<ROUnit> centers = UnitUtils.getAllMy(UnitType.TERRAN_COMMAND_CENTER);
@@ -96,10 +104,10 @@ public class Commander {
 		}
 	}
 
-	public void moveGroups() { //order each group to do something
-		
-	}
-	
 	public void setSpy(Spy s){ scout = s; }
 	public void setGovernor(Governor g){ builder = g;} 
+	
+	public void act(){
+		
+	}
 }

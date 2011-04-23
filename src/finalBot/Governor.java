@@ -56,21 +56,31 @@ public class Governor {
 	//TODO
 	public List<Pair<UnitType, TilePosition>> plan() {
 		//to start off, get state stuff
-		int workers = allWorkers.size();
 		Player me = Game.getInstance().self();
+		
+		//resources
 		int availGas = me.gas();
 		int availMinerals = me.minerals();
 		int supply = me.supplyTotal() - me.supplyUsed();
-		int barracks = UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size();
 		int supplyExpecting = 0;
+		
+		//buildings
+		int barracks = UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size();
 		boolean hasAcademy = !UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).isEmpty();
 		boolean willHaveAcademy = false;
-		boolean hasStim = me.hasResearched(TechType.STIM_PACKS);
-		boolean hasRange = me.getUpgradeLevel(UpgradeType.U_238_SHELLS) == 1;
 		int comsats = UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).size();
 		int turrets = UnitUtils.getAllMy(UnitType.TERRAN_MISSILE_TURRET).size();
 		int bunkers = UnitUtils.getAllMy(UnitType.TERRAN_BUNKER).size();
 		int centers = UnitUtils.getAllMy(UnitType.TERRAN_COMMAND_CENTER).size();
+		
+		//mobile units
+		int marines = UnitUtils.getAllMy(UnitType.TERRAN_MARINE).size();
+		int medics = UnitUtils.getAllMy(UnitType.TERRAN_MEDIC).size();
+		int workers = allWorkers.size();
+		
+		//upgrades
+		boolean hasStim = me.hasResearched(TechType.STIM_PACKS);
+		boolean hasRange = me.getUpgradeLevel(UpgradeType.U_238_SHELLS) == 1;
 		
 		for(ROUnit u: builders.keySet()){
 			UnitType willHave = builders.get(u);
@@ -92,7 +102,6 @@ public class Governor {
 				centers++;
 			}
 		}
-		//not done getting stuff yet ^
 		
 		//plan given above state
 		

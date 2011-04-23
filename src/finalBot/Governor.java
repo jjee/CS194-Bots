@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.bwapi.proxy.model.Game;
@@ -54,9 +55,19 @@ public class Governor {
 		return null;
 	}
 	
-	//TODO
 	public void executePlan() {
-		
+		List<Pair<UnitType, TilePosition>> plan = plan();
+		for(Pair<UnitType,TilePosition> p: plan){
+			UnitType t = p.getFirst();
+			TilePosition approx = p.getSecond();
+			if (t.isAddon()){
+				//TODO
+			} else if (t.isBuilding()){
+				build(t,approx);
+			} else {
+				produce(t);
+			}
+		}
 	}
 	
 	public void advance() {
@@ -101,12 +112,30 @@ public class Governor {
 		Unit builder = acquireBuilder(tp);
 		if (builder == null)
 			return false;
-		if (builder.canBuildHere(tp, type)) {
+		TilePosition actualTP = selectBuildLoc(type,tp, builder);
+		if (actualTP!=null) {
 			builder.build(tp, type);
 			builders.put(builder, type);
 			return true;					  
 		}
 		return false;
+	}
+	
+	private TilePosition selectBuildLoc(UnitType unit, TilePosition approx, Unit builder){
+		int numIterations = 20;
+		Random rand = new Random();
+		for (int buildDistance = 1; buildDistance < 20; buildDistance++){
+			for (int i = 0; i < numIterations; i++) {
+				int x = rand.nextInt(2*buildDistance)-buildDistance;
+				int y = rand.nextInt(2*buildDistance)-buildDistance;
+				TilePosition pos = new TilePosition(approx.x()+x, approx.y()+y);
+				//TilePosition add_pos = new TilePosition(approx.x()+x+2, approx.y()+y+1);
+				if(builder.canBuildHere(pos, unit)){
+					return pos;
+				}
+			}
+		}
+		return null;
 	}
 	
 	public boolean produce(UnitType type) {

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
@@ -56,7 +57,7 @@ public class Spy {
 	public void updateEnemyUnits() {
 		Set<Unit> toRemove = new HashSet<Unit>();
 		for(Unit u : enemyUnits) {
-			if(!u.exists())
+			if(Game.getInstance().self().canSeeUnitAtPosition(u.getType(),u.getLastKnownPosition()) && !u.isVisible())
 				toRemove.add(u);
 		}
 		enemyUnits.removeAll(toRemove);
@@ -96,7 +97,7 @@ public class Spy {
 	public int cloakedForces() {
 		int cloakedUnits = 0;
 		for(Unit u : enemyUnits) {
-			if(u.getType().isCloakable() || u.isBurrowed())
+			if(u.getType().isCloakable() || u.isCloaked() || u.getType().isBurrowable())
 				cloakedUnits++;
 		}
 		return cloakedUnits;

@@ -49,10 +49,12 @@ public class Governor {
 		toBuild.add(priority, type);
 	}
 	
+	//TODO
 	public List<Pair<UnitType, TilePosition>> plan() {
 		return null;
 	}
 	
+	//TODO
 	public void executePlan() {
 		
 	}
@@ -62,37 +64,26 @@ public class Governor {
 			nextBuild = plan().remove(0);
 	}
 	
-	public void addBuilder(Unit worker) {
+	public void addWorker(Unit worker) {
 		allWorkers.add(worker);
-		
-		boolean assigned = false;
-		int iteration = 0;
-		while (!assigned && !toBuild.isEmpty()) {
-			for (UnitType t : toBuild) {
-				int numFound = 0;
-				for (ROUnit u : builders.keySet()) {
-					if (builders.get(u) == t)
-						numFound++;
-				}
-				if (numFound <= iteration) {
-					builders.put(worker, t);
-					assigned = true;
-					break;
-				}
-			}
-			iteration++;
-		}
 	}
 	
-	public void removeBuilder(Unit worker) {
+	public void removeWorker(Unit worker) {
 		allWorkers.remove(worker);
 		builders.remove(worker);
 	}
 	
-	public Unit acquireBuilder(UnitType toBuild, TilePosition tp) {
-		List<ROUnit> units = new LinkedList<ROUnit>();
+	public void updateBuilders() {
 		for (ROUnit u : builders.keySet()) {
-			if (builders.get(u) == toBuild && !u.isCarryingGas() && !u.isCarryingMinerals() && !u.isConstructing())
+			if (u.isIdle())
+				builders.remove(u);
+		}
+	}
+	
+	private Unit acquireBuilder(TilePosition tp) {
+		List<ROUnit> units = new LinkedList<ROUnit>();
+		for (ROUnit u : allWorkers) {
+			if (!u.isCarryingGas() && !u.isCarryingMinerals() && !u.isConstructing())
 				units.add(u);
 		}
 		if (units.isEmpty())
@@ -100,12 +91,19 @@ public class Governor {
 		return UnitUtils.assumeControl(Tools.findClosest(units, tp));
 	}
 	
+	public Unit pullWorker(TilePosition tp) {
+		Unit worker = acquireBuilder(tp);
+		allWorkers.remove(worker);
+		return worker;
+	}
+	
 	public boolean build(UnitType type, TilePosition tp) {
-		Unit builder = acquireBuilder(type, tp);
+		Unit builder = acquireBuilder(tp);
 		if (builder == null)
 			return false;
 		if (builder.canBuildHere(tp, type)) {
 			builder.build(tp, type);
+			builders.put(builder, type);
 			return true;					  
 		}
 		return false;

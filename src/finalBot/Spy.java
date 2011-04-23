@@ -30,7 +30,7 @@ public class Spy {
 	// returns SCV to builder or removes if scout destroyed
 	public void unassignScout() {
 		if(myScout.exists())
-			builder.addBuilder(myScout);
+			builder.addWorker(myScout);
 		myScout = null;
 	}
 	

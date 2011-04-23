@@ -33,7 +33,7 @@ public class Commander {
 		UnitType type = u.getType();
 		if(type==UnitType.TERRAN_MARINE && type==UnitType.TERRAN_MEDIC){
 			int threshold = 0;
-			ArmyGroup choice;
+			ArmyGroup choice = null;
 			if(type==UnitType.TERRAN_MARINE){
 				threshold = 8;
 			} else if (type==UnitType.TERRAN_MEDIC){
@@ -42,9 +42,16 @@ public class Commander {
 			
 			for(ArmyGroup g: marineMedicGroups){
 				if(!g.isAttacking()) {
-					
+					if(g.getUnits(type).size() < threshold){
+						choice = g;
+					}
 				}
 			}
+			
+			if(choice==null){
+				choice = new ArmyGroup();
+			}
+			choice.add(u);
 		}
 	}
 	
@@ -56,6 +63,7 @@ public class Commander {
 		Position pos = new Position(tp.x(),tp.y());
 		if(g.isAttacking()){
 			g.setAttack(true);
+			attackCount++;
 		}
 		if(!Tools.close(g.getLocation(),tp,20)){
 			for(Unit u: g.getUnits()){
@@ -81,7 +89,11 @@ public class Commander {
 	
 	}
 	public void retreat(ArmyGroup g) {//retreat group
-	
+		for(Unit u: g.getUnits()){
+			List<ROUnit> centers = UnitUtils.getAllMy(UnitType.TERRAN_COMMAND_CENTER);
+			if(!centers.isEmpty() && u.isIdle())
+				u.rightClick(centers.get(0));
+		}
 	}
 
 	public void moveGroups() { //order each group to do something

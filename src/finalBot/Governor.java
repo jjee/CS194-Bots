@@ -10,9 +10,11 @@ import java.util.Set;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Player;
 import org.bwapi.proxy.model.ROUnit;
+import org.bwapi.proxy.model.TechType;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
 import org.bwapi.proxy.model.UnitType;
+import org.bwapi.proxy.model.UpgradeType;
 import org.bwapi.proxy.util.Pair;
 
 import edu.berkeley.nlp.starcraft.util.UnitUtils;
@@ -62,6 +64,8 @@ public class Governor {
 		int barracks = UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size();
 		int supplyExpecting = 0;
 		boolean hasAcademy = !UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).isEmpty();
+		boolean hasStim = me.hasResearched(TechType.STIM_PACKS);
+		boolean hasRange = me.getUpgradeLevel(UpgradeType.U_238_SHELLS) == 1;
 		int comsats = UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).size();
 		int turrets = UnitUtils.getAllMy(UnitType.TERRAN_MISSILE_TURRET).size();
 		

@@ -64,10 +64,13 @@ public class Governor {
 		int barracks = UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size();
 		int supplyExpecting = 0;
 		boolean hasAcademy = !UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).isEmpty();
+		boolean willHaveAcademy = false;
 		boolean hasStim = me.hasResearched(TechType.STIM_PACKS);
 		boolean hasRange = me.getUpgradeLevel(UpgradeType.U_238_SHELLS) == 1;
 		int comsats = UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).size();
 		int turrets = UnitUtils.getAllMy(UnitType.TERRAN_MISSILE_TURRET).size();
+		int bunkers = UnitUtils.getAllMy(UnitType.TERRAN_BUNKER).size();
+		int centers = UnitUtils.getAllMy(UnitType.TERRAN_COMMAND_CENTER).size();
 		
 		for(ROUnit u: builders.keySet()){
 			UnitType willHave = builders.get(u);
@@ -80,10 +83,18 @@ public class Governor {
 			} else if (willHave == UnitType.TERRAN_SUPPLY_DEPOT){
 				supplyExpecting += 8;
 			} else if (willHave == UnitType.TERRAN_ACADEMY) {
-				hasAcademy = true;
+				willHaveAcademy = true;
+			} else if (willHave == UnitType.TERRAN_MISSILE_TURRET){
+				turrets++;
+			} else if (willHave == UnitType.TERRAN_BUNKER){
+				bunkers++;
+			} else if (willHave == UnitType.TERRAN_COMMAND_CENTER){
+				centers++;
 			}
 		}
 		//not done getting stuff yet ^
+		
+		//plan given above state
 		
 		
 		return null;

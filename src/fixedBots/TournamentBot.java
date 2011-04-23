@@ -16,7 +16,7 @@ public class TournamentBot {
 
 			@Override
 			public ProxyBot getBot(Game g) {
-				return new Overmind(new LurkerDrop(), new Properties());
+				return new Overmind(new VultureDropNoCheese(), new Properties());
 			}
 			
 		};

@@ -60,14 +60,23 @@ public class Tools {
 		return units;
 	}
 	
-	
-	public static ROUnit findClosest(List<Unit> units, TilePosition p){
+	public static ROUnit findClosest(Set<ROUnit> units, TilePosition p) {
 		int x = p.x()*TILE_SIZE;
 		int y = p.y()*TILE_SIZE;
 		return findClosest(units,new Position(x,y));
 	}
 	
-	public static ROUnit findClosest(List<Unit> units, Position p){
+	public static ROUnit findClosest(Set<ROUnit> units, Position p) {
+		return findClosest(new ArrayList<ROUnit>(units), p);
+	}
+	
+	public static ROUnit findClosest(List<ROUnit> units, TilePosition p){
+		int x = p.x()*TILE_SIZE;
+		int y = p.y()*TILE_SIZE;
+		return findClosest(units,new Position(x,y));
+	}
+	
+	public static ROUnit findClosest(List<ROUnit> units, Position p){
 		double best = 10000;
 		ROUnit bestu = null;
 		for(ROUnit u: units){

@@ -15,12 +15,12 @@ public class Spy {
 	Governor builder;
 	Commander attacker;
 	Map<TilePosition,Long> scouted; //maps areas scouted to time scouted?
-	Set<Unit> enemyUnits;
+	Set<ROUnit> enemyUnits;
 	Unit myScout;
 	
 	Spy() {
 		scouted = new HashMap<TilePosition,Long>();
-		enemyUnits = new HashSet<Unit>();
+		enemyUnits = new HashSet<ROUnit>();
 	}
 	
 	// grabs SCV from builder for scouting
@@ -55,8 +55,8 @@ public class Spy {
 
 	// remove buildings if not there anymore
 	public void updateEnemyUnits() {
-		Set<Unit> toRemove = new HashSet<Unit>();
-		for(Unit u : enemyUnits) {
+		Set<ROUnit> toRemove = new HashSet<ROUnit>();
+		for(ROUnit u : enemyUnits) {
 			if(Game.getInstance().self().canSeeUnitAtPosition(u.getType(),u.getLastKnownPosition()) && !u.isVisible())
 				toRemove.add(u);
 		}
@@ -64,19 +64,19 @@ public class Spy {
 	}
 	
 	// adds enemy unit to set
-	public void addEnemyUnit(Unit u) {
+	public void addEnemyUnit(ROUnit u) {
 		enemyUnits.add(u);
 	}
 	
 	// removes enemy from set
-	public void removeEnemyUnit(Unit u) {
-		enemyUnits.remove(u);
+	public void removeEnemyUnit(ROUnit unit) {
+		enemyUnits.remove(unit);
 	}
 	
 	// enemy armed air unit count
 	public int airForces() {
 		int airUnits = 0;
-		for(Unit u : enemyUnits) {
+		for(ROUnit u : enemyUnits) {
 			if(u.getType().isFlyer() && u.getType().canAttack())
 				airUnits++;
 		}
@@ -86,7 +86,7 @@ public class Spy {
 	// enemy armed ground unit count
 	public int groundForces() {
 		int groundUnits = 0;
-		for(Unit u : enemyUnits) {
+		for(ROUnit u : enemyUnits) {
 			if(!u.getType().isFlyer() && u.getType().canAttack())
 				groundUnits++;
 		}
@@ -96,7 +96,7 @@ public class Spy {
 	// enemy cloaked unit count
 	public int cloakedForces() {
 		int cloakedUnits = 0;
-		for(Unit u : enemyUnits) {
+		for(ROUnit u : enemyUnits) {
 			if(u.getType().isCloakable() || u.isCloaked() || u.getType().isBurrowable())
 				cloakedUnits++;
 		}
@@ -106,7 +106,7 @@ public class Spy {
 	// enemy melee attackers count
 	public int meleeForces() {
 		int meleeUnits = 0;
-		for(Unit u : enemyUnits) {
+		for(ROUnit u : enemyUnits) {
 			WeaponType weapon = u.getType().groundWeapon();
 			if(!weapon.equals(WeaponType.NONE) && weapon.maxRange() <= 15)
 				meleeUnits++;
@@ -117,7 +117,7 @@ public class Spy {
 	// enemy ground ranged attackers count
 	public int rangedForces() {
 		int rangedUnits = 0;
-		for(Unit u : enemyUnits) {
+		for(ROUnit u : enemyUnits) {
 			WeaponType weapon = u.getType().groundWeapon();
 			if(!weapon.equals(WeaponType.NONE) && weapon.maxRange() > 15)
 				rangedUnits++;

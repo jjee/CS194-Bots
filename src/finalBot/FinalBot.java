@@ -11,6 +11,7 @@ import edu.berkeley.nlp.starcraft.Strategy;
 import edu.berkeley.nlp.starcraft.scripting.Command;
 import edu.berkeley.nlp.starcraft.scripting.JythonInterpreter;
 import edu.berkeley.nlp.starcraft.scripting.Thunk;
+import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
 public class FinalBot extends AbstractCerebrate implements Strategy {
 	JythonInterpreter jython = new JythonInterpreter();
@@ -49,11 +50,24 @@ public class FinalBot extends AbstractCerebrate implements Strategy {
 
 	@Override
 	public void onUnitCreate(ROUnit unit) {
+		if(me.isEnemy(unit.getPlayer()))
+			return;
+		
+		if(unit.getType().isWorker()){
+			governor.addWorker(UnitUtils.assumeControl(unit));
+		}
 	}
 
 	@Override
 	public void onUnitDestroy(ROUnit unit) {
-
+		if(me.isEnemy(unit.getPlayer())){
+			spy.removeEnemyUnit(unit);
+			return;
+		}
+		
+		if(unit.getType().isWorker()){
+			governor.removeWorker(UnitUtils.assumeControl(unit));
+		}
 	}
 
 	@Override
@@ -68,7 +82,10 @@ public class FinalBot extends AbstractCerebrate implements Strategy {
 
 	@Override
 	public void onUnitShow(ROUnit unit) {
-
+		if(me.isEnemy(unit.getPlayer())){
+			spy.addEnemyUnit(unit);
+			return;
+		}
 	}
 
 

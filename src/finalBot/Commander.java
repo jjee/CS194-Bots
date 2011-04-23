@@ -116,6 +116,9 @@ public class Commander {
 	public void setGovernor(Governor g){ builder = g;} 
 	
 	public void act(){
-		
+		int totalEnemyForces = scout.groundForces() + scout.airForces();
+		if(armyUnits.size() > totalEnemyForces){
+			
+		}
 	}
 }

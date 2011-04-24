@@ -1,6 +1,7 @@
 package finalBot;
 
 public enum Alert {
+	NONE,
 	GAS_TAKEN,
 	EARLY_RUSH,
 	NO_DEFENSE,

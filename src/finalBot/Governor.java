@@ -66,6 +66,8 @@ public class Governor extends Overseer {
 				units.put(u.getType(),1);
 		}
 		
+		HashMap<UnitType,Integer> futureUnits = new HashMap<UnitType,Integer>(units);
+		
 		//buildings
 		int barracks = UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size();
 		boolean hasAcademy = !UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).isEmpty();

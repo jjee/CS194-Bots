@@ -111,8 +111,12 @@ public class Governor extends Overseer {
 
 		}
 		
+		if(!plan.isEmpty())
+			Game.getInstance().printf("Building: " + plan.get(0).getFirst());
 		
-		return null;
+		if(builders!=null)
+			Game.getInstance().printf("Builder count: " + builders.size());
+		return plan;
 	}
 
 	private void earlyBuild(List<Pair<UnitType, TilePosition>> plan,

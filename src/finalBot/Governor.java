@@ -19,13 +19,12 @@ import org.bwapi.proxy.util.Pair;
 
 import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
-public class Governor {
+public class Governor extends Overseer {
 	private HashMap<ROUnit, UnitType> builders;
 	private HashSet<ROUnit> allWorkers;
 	private LinkedList<UnitType> toBuild;
 	private Pair<UnitType, TilePosition> nextBuild;
-	private Spy scout;
-	private Commander attacker;
+	private GameStage gamestage;
 	
 	public Governor() {
 		builders = new HashMap<ROUnit, UnitType>();
@@ -33,19 +32,12 @@ public class Governor {
 		toBuild = new LinkedList<UnitType>();
 		scout = null;
 		attacker = null;
+		gamestage = GameStage.EARLY;
 	}
 	
 	public Governor(LinkedList<UnitType> toBuild) {
 		this();
 		this.toBuild = toBuild;
-	}
-	
-	public void setSpy(Spy spy) {
-		scout = spy;
-	}
-	
-	public void setCommander(Commander commander) {
-		attacker = commander;
 	}
 	
 	public void addToBuild(UnitType type, int priority) {
@@ -248,5 +240,9 @@ public class Governor {
 	
 	public void act(){
 		
+	}
+	
+	public GameStage getGameStage() {
+		return gamestage;
 	}
 }

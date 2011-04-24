@@ -36,6 +36,14 @@ public class Tools {
 		return false;
 	}
 	
+	public static boolean close(ROUnit u, List<ROUnit> targets, int dist){
+		for(ROUnit target: targets){
+			if(close(u,target.getTilePosition(),dist))
+				return true;
+		}
+		return false;
+	}
+	
 	public static Position randomNearby(ROUnit u, int dist){
 		int dx = (int)(Math.random()*dist-dist/2);
 		int dy = (int)(Math.random()*dist-dist/2);

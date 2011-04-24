@@ -4,9 +4,7 @@ public abstract class Overseer {
 	protected Governor builder;
 	protected Commander attacker;
 	protected Spy scout;
-	protected TerranSpecialist terranSpecialist;
-	protected ProtossSpecialist protossSpecialist;
-	protected ZergSpecialist zergSpecialist;
+	protected Specialist specialist;
 	
 	public void setGovernor(Governor builder) {
 		this.builder = builder;
@@ -20,16 +18,8 @@ public abstract class Overseer {
 		this.scout = scout;
 	}
 	
-	public void setTerranSpecialist(TerranSpecialist terranSpecialist) {
-		this.terranSpecialist = terranSpecialist;
-	}
-	
-	public void setTerranSpecialist(ProtossSpecialist protossSpecialist) {
-		this.protossSpecialist = protossSpecialist;
-	}
-	
-	public void setTerranSpecialist(ZergSpecialist zergSpecialist) {
-		this.zergSpecialist = zergSpecialist;
+	public void setSpecialist(Specialist specialist) {
+		this.specialist = specialist;
 	}
 	
 	public abstract void act();

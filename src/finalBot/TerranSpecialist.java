@@ -7,10 +7,7 @@ import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Unit;
 import org.bwapi.proxy.model.UnitType;
 
-public class TerranSpecialist {
-	private Governor builder;
-	private Commander attacker;
-	private Spy scout;
+public class TerranSpecialist extends Overseer {
 	private List<Unit> factories;
 	
 	public TerranSpecialist() {
@@ -24,4 +21,6 @@ public class TerranSpecialist {
 				Game.getInstance().printf("2 factories detected!");
 		}
 	}
+	
+	public void act() {}
 }

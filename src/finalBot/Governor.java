@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.bwapi.proxy.model.Color;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Player;
 import org.bwapi.proxy.model.ROUnit;
@@ -26,6 +27,8 @@ public class Governor extends Overseer {
 	private LinkedList<UnitType> toBuild;
 	private Pair<UnitType, TilePosition> nextBuild;
 	private GameStage gamestage;
+	private int updateTime;
+	private final int REBUILD_TIME = 30;
 	
 	public Governor() {
 		builders = new HashMap<ROUnit, UnitType>();
@@ -60,15 +63,13 @@ public class Governor extends Overseer {
 		
 		
 		// general
-		HashMap<UnitType,Integer> units = new HashMap<UnitType,Integer>();
+		HashMap<UnitType,Integer> units = new HashMapInit0<UnitType,Integer>();
 		for(ROUnit u : Game.getInstance().self().getUnits()) {
 			if(units.containsKey(u.getType()))
 				units.put(u.getType(),units.get(u.getType())+1);
 			else
 				units.put(u.getType(),1);
 		}
-		
-		HashMap<UnitType,Integer> futureUnits = new HashMap<UnitType,Integer>(units);
 		
 		//buildings
 		boolean hasAcademy = !UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).isEmpty();
@@ -78,10 +79,10 @@ public class Governor extends Overseer {
 		boolean hasStim = me.hasResearched(TechType.STIM_PACKS);
 		boolean hasRange = me.getUpgradeLevel(UpgradeType.U_238_SHELLS) == 1;
 		
-		HashMap<UnitType,Integer> futureAssets = new HashMap<UnitType,Integer>();
+		HashMap<UnitType,Integer> futureAssets = new HashMapInit0<UnitType,Integer>();
 		for(ROUnit u: builders.keySet()){
 			UnitType willHave = builders.get(u);
-			if (u.isConstructing() && u.getBuildUnit()==null){ //unit going to construct but
+			if (u.getBuildUnit()==null){ //unit going to construct but
 				availMinerals -= willHave.mineralPrice();		//haven't paid price yet
 				availGas -= willHave.gasPrice();
 			}
@@ -111,11 +112,11 @@ public class Governor extends Overseer {
 
 		}
 		
-		if(!plan.isEmpty())
-			Game.getInstance().printf("Building: " + plan.get(0).getFirst());
+		//if(!plan.isEmpty())
+			//Game.getInstance().printf("Building: " + plan.get(0).getFirst());
 		
-		if(builders!=null)
-			Game.getInstance().printf("Builder count: " + builders.size());
+		//if(builders!=null)
+			//Game.getInstance().printf("Builder count: " + builders.size());
 		return plan;
 	}
 
@@ -173,17 +174,27 @@ public class Governor extends Overseer {
 	 * Must be called at very beginning before doing anything else
 	 */
 	public void updateBuilders() {
+		Set<ROUnit> toRemove = new HashSet<ROUnit>();
 		for (ROUnit u : builders.keySet()) {
-			if (u.isIdle())
-				builders.remove(u);
+			Game.getInstance().drawCircleMap(u.getPosition(), 20, Color.GREEN, false);
+			if (u.isIdle() || (u.isGatheringGas() && builders.get(u) == UnitType.TERRAN_REFINERY))
+				toRemove.add(u);
+			else if (u.isGatheringMinerals()||u.isGatheringGas()){
+				Unit myUnit = UnitUtils.assumeControl(u);
+				TilePosition tp = selectBuildLoc(builders.get(u),myUnit.getTilePosition(),myUnit);
+				if(tp!=null)
+					UnitUtils.assumeControl(u).build(tp, builders.get(u));
+			}
+		}
+		for(ROUnit u: toRemove){
+			builders.remove(u);
 		}
 	}
 	
 	private Unit acquireBuilder(TilePosition tp) {
 		List<ROUnit> units = new LinkedList<ROUnit>();
 		for (ROUnit u : allWorkers) {
-			if (!u.isCarryingGas() && !u.isCarryingMinerals() 
-					&& !u.isConstructing() && !builders.containsKey(u))
+			if (u.isCompleted()&&!u.isConstructing() && !builders.containsKey(u))
 				units.add(u);
 		}
 		if (units.isEmpty())
@@ -213,6 +224,10 @@ public class Governor extends Overseer {
 			actualTP = UnitUtils.getClosest(builder.getPosition(), geysers).getTilePosition();
 		}
 		if (actualTP!=null) {
+			System.out.println("actual: " + actualTP);
+			System.out.println("home " + tp);
+			System.out.println(type);
+			
 			builder.build(tp, type);
 			builders.put(builder, type);
 			return true;					  
@@ -223,7 +238,7 @@ public class Governor extends Overseer {
 	private TilePosition selectBuildLoc(UnitType unit, TilePosition approx, Unit builder){
 		int numIterations = 20;
 		Random rand = new Random();
-		for (int buildDistance = 1; buildDistance < 20; buildDistance++){
+		for (int buildDistance = 5; buildDistance < 20; buildDistance++){
 			for (int i = 0; i < numIterations; i++) {
 				int x = rand.nextInt(2*buildDistance)-buildDistance;
 				int y = rand.nextInt(2*buildDistance)-buildDistance;
@@ -275,7 +290,11 @@ public class Governor extends Overseer {
 	
 	public void mine(){
 		for(ROUnit w: allWorkers){
-			if(builders.containsKey(w)||!w.isIdle()) continue;
+			if(builders.containsKey(w)||!w.isIdle()||w.isGatheringGas()) {
+				if(builders.containsKey(w))
+					System.out.println("contains builder");
+				continue;
+			}
 			gatherMinerals(UnitUtils.assumeControl(w));
 		}
 	}
@@ -291,7 +310,7 @@ public class Governor extends Overseer {
 		}
 		for(ROUnit w: allWorkers){
 			if (gasCount>=3) return;
-			if(!w.isGatheringGas() && builders.containsKey(w)){
+			if(!w.isGatheringGas() && !builders.containsKey(w)){
 				gatherGas(UnitUtils.assumeControl(w));
 				gasCount++;
 			}
@@ -299,9 +318,14 @@ public class Governor extends Overseer {
 	}
 	
 	public void act(){
+		updateTime++;
+		if(updateTime>=REBUILD_TIME){
+			updateBuilders();
+			updateTime = 0;
+		}
 		executePlan();
-		mine();
 		gas();
+		mine();
 	}
 	
 	public GameStage getGameStage() {

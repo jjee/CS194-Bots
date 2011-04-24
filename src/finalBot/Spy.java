@@ -16,6 +16,8 @@ import org.bwapi.proxy.model.Unit;
 import org.bwapi.proxy.model.UnitType;
 import org.bwapi.proxy.model.WeaponType;
 
+import edu.berkeley.nlp.starcraft.util.UnitUtils;
+
 public class Spy extends Overseer {
 	private Map<TilePosition,Long> scouted; //maps areas scouted to time scouted?
 	private Set<ROUnit> enemyUnits;
@@ -33,6 +35,7 @@ public class Spy extends Overseer {
 	// grabs SCV from builder for scouting
 	private void assignScout(TilePosition tp) {
 		myScout = builder.pullWorker(tp);
+		myScout.stop();
 	}
 	
 	// returns SCV to builder or removes if scout destroyed
@@ -183,7 +186,17 @@ public class Spy extends Overseer {
 	}
 	
 	public void act(){
-		if(myScout != null) {
+		if(myScout==null) {
+			if(UnitUtils.getAllMy(UnitType.TERRAN_SCV).size() >= 11){
+				assignScout(new TilePosition(0,0));
+				return;
+			}
+		}
+		if(myScout==null){
+			System.out.println("no scout");
+			return;
+		}
+		if(myScout != null && !enemyGroundUnits().isEmpty()) {
 			int maxAtkRange = maxGroundRange();
 			if(Tools.close(myScout, enemyGroundUnits(), maxAtkRange)) {
 				if(!myScout.getOrder().equals(Order.PATROL))
@@ -193,13 +206,20 @@ public class Spy extends Overseer {
 				myScout.stop();
 		}
 		
-		if(enemyBuildings() <= 0)
+		if(enemyBuildings() <= 0){
 			findEnemy();
-		else
+			System.out.println("looking for enemy");
+		}else{
 			scoutEnemy();
-		
+			System.out.println("scouting");
+		}
 		if(myScout.isIdle()) {
-			myScout.attack(Tools.findClosest(enemyBases(), myScout.getTilePosition()));
+			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());
+			if(target!=null)
+				myScout.attack(target);
+			else{
+				
+			}
 		}
 	}
 	

@@ -64,6 +64,16 @@ public class Governor {
 		int supply = me.supplyTotal() - me.supplyUsed();
 		int supplyExpecting = 0;
 		
+		
+		// general
+		HashMap<UnitType,Integer> units = new HashMap<UnitType,Integer>();
+		for(ROUnit u : Game.getInstance().self().getUnits()) {
+			if(units.containsKey(u.getType()))
+				units.put(u.getType(),units.get(u.getType())+1);
+			else
+				units.put(u.getType(),1);
+		}
+		
 		//buildings
 		int barracks = UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size();
 		boolean hasAcademy = !UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).isEmpty();

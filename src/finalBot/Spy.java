@@ -19,15 +19,15 @@ import org.bwapi.proxy.model.WeaponType;
 import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
 public class Spy extends Overseer {
-	private Map<TilePosition,Long> scouted; //maps areas scouted to time scouted?
+	private Map<TilePosition,Integer> scouted; //maps areas scouted to time scouted?
 	private Set<ROUnit> enemyUnits;
 	private Unit myScout;
 	private TilePosition myHome; 
-	private static final long MINUTE_IN_MS = 60000;
+	private static final int FRAMES_PER_MIN = 1440;
 	private static final int PIXEL_SCOUT_RANGE = 1000;
 	
 	public Spy() {
-		scouted = new HashMap<TilePosition,Long>();
+		scouted = new HashMap<TilePosition,Integer>();
 		enemyUnits = new HashSet<ROUnit>();
 		myHome = Game.getInstance().self().getStartLocation();
 	}
@@ -50,7 +50,7 @@ public class Spy extends Overseer {
 		if(myScout == null)
 			assignScout(tp);
 		if(Tools.close((ROUnit) myScout, tp, myScout.getType().sightRange()/32)) {
-			scouted.put(tp, System.currentTimeMillis());
+			scouted.put(tp, Game.getInstance().getFrameCount());
 			return;
 		}
 		myScout.move(tp);
@@ -58,10 +58,10 @@ public class Spy extends Overseer {
 	
 	// uses scout to find enemy
 	public void findEnemy() {
-		if(!myScout.isIdle())
+		if(!myScout.isStopped())
 			return;
 		for(TilePosition tp : Game.getInstance().getStartLocations()) {
-			if(!scouted.containsKey(tp) || scouted.get(tp) < System.currentTimeMillis()-MINUTE_IN_MS) {
+			if(!scouted.containsKey(tp) || scouted.get(tp) < Game.getInstance().getFrameCount()-FRAMES_PER_MIN) {
 				scan(tp);
 				return;
 			}
@@ -70,7 +70,7 @@ public class Spy extends Overseer {
 	
 	// scouts enemy's nearby potential expansions locations 
 	public void scoutEnemy() {
-		if(!myScout.isIdle())
+		if(!myScout.isStopped())
 			return;
 		List<TilePosition> potentialExpansions = new LinkedList<TilePosition>();
 		for(ROUnit u : Game.getInstance().getGeysers()) {
@@ -78,7 +78,7 @@ public class Spy extends Overseer {
 				potentialExpansions.add(u.getLastKnownTilePosition());
 		}
 		for(TilePosition tp : potentialExpansions) {
-			if(!scouted.containsKey(tp) || scouted.get(tp) < System.currentTimeMillis()-MINUTE_IN_MS) {
+			if(!scouted.containsKey(tp) || scouted.get(tp) < Game.getInstance().getFrameCount()-FRAMES_PER_MIN) {
 				scan(tp);
 				return;
 			}
@@ -186,9 +186,9 @@ public class Spy extends Overseer {
 	}
 	
 	public void act(){
-		if(myScout==null) {
+		if(myScout==null || !myScout.isVisible()) {
 			if(UnitUtils.getAllMy(UnitType.TERRAN_SCV).size() >= 11){
-				assignScout(new TilePosition(0,0));
+				assignScout(myHome);
 				return;
 			}
 		}
@@ -196,8 +196,9 @@ public class Spy extends Overseer {
 			System.out.println("no scout");
 			return;
 		}
-		if(myScout != null && !enemyGroundUnits().isEmpty()) {
-			int maxAtkRange = maxGroundRange();
+		if(myScout != null && !enemyGroundUnits().isEmpty() && !myScout.getOrder().equals(Order.MOVE)) {
+			//int maxAtkRange = maxGroundRange();
+			int maxAtkRange = 15;
 			if(Tools.close(myScout, enemyGroundUnits(), maxAtkRange)) {
 				if(!myScout.getOrder().equals(Order.PATROL))
 					myScout.patrol(new Position(myHome));
@@ -213,7 +214,7 @@ public class Spy extends Overseer {
 			scoutEnemy();
 			System.out.println("scouting");
 		}
-		if(myScout.isIdle()) {
+		if(myScout.isStopped()) {
 			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());
 			if(target!=null)
 				myScout.attack(target);

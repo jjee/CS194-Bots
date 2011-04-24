@@ -1,0 +1,12 @@
+package finalBot;
+
+public enum Alert {
+	GAS_TAKEN,
+	EARLY_RUSH,
+	NO_DEFENSE,
+	AIR_STRUCTURES,
+	AIR_UNITS,
+	CLOAKED_UNITS,
+	OUTNUMBERED,
+	EXPANSION
+}

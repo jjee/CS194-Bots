@@ -14,9 +14,7 @@ import org.bwapi.proxy.model.UnitType;
 
 import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
-public class Commander {
-	private Spy scout;
-	private Governor builder;
+public class Commander extends Overseer {
 	private Set<Unit> armyUnits; //all units under attacker control
 	private List<ArmyGroup> marineMedicGroups;
 	private int attackCount; //number of times we tried to attack
@@ -112,9 +110,6 @@ public class Commander {
 		}
 	}
 
-	public void setSpy(Spy s){ scout = s; }
-	public void setGovernor(Governor g){ builder = g;} 
-	
 	public void act(){
 		int totalEnemyForces = scout.groundForces() + scout.airForces();
 		if(armyUnits.size() > totalEnemyForces){

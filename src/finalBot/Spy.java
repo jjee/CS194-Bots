@@ -11,14 +11,12 @@ import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
 import org.bwapi.proxy.model.WeaponType;
 
-public class Spy {
-	Governor builder;
-	Commander attacker;
-	Map<TilePosition,Long> scouted; //maps areas scouted to time scouted?
-	Set<ROUnit> enemyUnits;
-	Unit myScout;
+public class Spy extends Overseer {
+	private Map<TilePosition,Long> scouted; //maps areas scouted to time scouted?
+	private Set<ROUnit> enemyUnits;
+	private Unit myScout;
 	
-	Spy() {
+	public Spy() {
 		scouted = new HashMap<TilePosition,Long>();
 		enemyUnits = new HashSet<ROUnit>();
 	}
@@ -132,14 +130,6 @@ public class Spy {
 	
 	public int largeForces() {
 		return 0;
-	}
-	
-	public void setCommander(Commander c) {
-		attacker = c;
-	}
-	
-	public void setGovernor(Governor g) {
-		builder = g;
 	}
 	
 	public void act(){

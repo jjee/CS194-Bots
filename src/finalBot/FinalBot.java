@@ -85,6 +85,9 @@ public class FinalBot extends AbstractCerebrate implements Strategy {
 		if(unit.getType().isWorker()){
 			governor.addWorker(UnitUtils.assumeControl(unit));
 		}
+		if(!unit.getType().isBuilding()){
+			commander.addAttacker(UnitUtils.assumeControl(unit));
+		}
 	}
 
 	@Override
@@ -96,6 +99,8 @@ public class FinalBot extends AbstractCerebrate implements Strategy {
 		
 		if(unit.getType().isWorker()){
 			governor.removeWorker(UnitUtils.assumeControl(unit));
+		} else {
+			commander.removeAttacker(UnitUtils.assumeControl(unit));
 		}
 	}
 

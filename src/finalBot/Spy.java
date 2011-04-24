@@ -194,7 +194,7 @@ public class Spy extends Overseer {
 			}
 		}
 		if(myScout==null){
-			System.out.println("no scout");
+			//System.out.println("no scout");
 			return;
 		}
 		if(myScout != null && !enemyGroundUnits().isEmpty() && !myScout.getOrder().equals(Order.MOVE)) {
@@ -210,10 +210,10 @@ public class Spy extends Overseer {
 		
 		if(enemyBuildings() <= 0){
 			findEnemy();
-			System.out.println("looking for enemy");
+			//System.out.println("looking for enemy");
 		}else{
 			scoutEnemy();
-			System.out.println("scouting");
+			//System.out.println("scouting");
 		}
 		if(myScout.isStopped()) {
 			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());

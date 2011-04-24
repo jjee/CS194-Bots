@@ -11,6 +11,7 @@ import java.util.Set;
 import org.bwapi.proxy.model.Color;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Player;
+import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TechType;
 import org.bwapi.proxy.model.TilePosition;
@@ -19,6 +20,7 @@ import org.bwapi.proxy.model.UnitType;
 import org.bwapi.proxy.model.UpgradeType;
 import org.bwapi.proxy.util.Pair;
 
+import edu.berkeley.nlp.starcraft.util.ConvexHull;
 import edu.berkeley.nlp.starcraft.util.Counter;
 import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
@@ -31,6 +33,8 @@ public class Governor extends Overseer {
 	private GameStage gamestage;
 	private int updateTime;
 	private final int REBUILD_TIME = 30;
+	private ROUnit naturalBase;
+	private ConvexHull miningArea;
 	
 	public Governor() {
 		builders = new HashMap<ROUnit, UnitType>();
@@ -40,6 +44,8 @@ public class Governor extends Overseer {
 		attacker = null;
 		gamestage = GameStage.EARLY;
 		gasWorkers = new HashSet<ROUnit>();
+		naturalBase = UnitUtils.getAllMy(UnitType.TERRAN_COMMAND_CENTER).get(0);
+		landManagement();
 	}
 	
 	public Governor(LinkedList<UnitType> toBuild) {
@@ -50,6 +56,19 @@ public class Governor extends Overseer {
 	public void addToBuild(UnitType type, int priority) {
 		toBuild.remove(type);
 		toBuild.add(priority, type);
+	}
+	
+	public void landManagement(){
+		Set<Position> vertices = new HashSet<Position>();
+		vertices.add(naturalBase.getPosition());
+		Set<? extends ROUnit> patches = Game.getInstance().getMinerals();
+		for(ROUnit p : patches){
+			if(p.isVisible())
+				vertices.add(p.getPosition());
+		}
+		Set<ROUnit> geysers = (Set<ROUnit>) Game.getInstance().getStaticGeysers();
+		vertices.add(Tools.findClosest(geysers,naturalBase.getPosition()).getPosition());	
+		miningArea = new ConvexHull(vertices);
 	}
 	
 	//TODO
@@ -157,7 +176,7 @@ public class Governor extends Overseer {
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_BARRACKS,center.getTilePosition()));
 			availMinerals -=150;
 		} else if(units.getCount(UnitType.TERRAN_REFINERY) + futureAssets.getCount(UnitType.TERRAN_REFINERY) < 1){
-			if(availMinerals >= 50) 
+			if(availMinerals >= 100) 
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_REFINERY,center.getTilePosition()));
 			availMinerals -=50;
 		} else if(units.getCount(UnitType.TERRAN_ACADEMY) +futureAssets.getCount(UnitType.TERRAN_ACADEMY) < 1){
@@ -298,15 +317,8 @@ public class Governor extends Overseer {
 			return false;
 		}
 		TilePosition actualTP = selectBuildLoc(type,tp, builder);
-		if(type == UnitType.TERRAN_REFINERY){
-			Set<ROUnit> geysers = (Set<ROUnit>) Game.getInstance().getStaticGeysers();
-			actualTP = UnitUtils.getClosest(builder.getPosition(), geysers).getTilePosition();
-		}
+		
 		if (actualTP!=null) {
-			System.out.println("actual: " + actualTP);
-			System.out.println("home " + tp);
-			System.out.println(type);
-			
 			builder.build(tp, type);
 			builders.put(builder, type);
 			return true;					  
@@ -315,15 +327,21 @@ public class Governor extends Overseer {
 	}
 	
 	private TilePosition selectBuildLoc(UnitType unit, TilePosition approx, Unit builder){
-		int numIterations = 20;
+		if(unit == UnitType.TERRAN_REFINERY){
+			Set<ROUnit> geysers = (Set<ROUnit>) Game.getInstance().getStaticGeysers();
+			return UnitUtils.getClosest(builder.getPosition(), geysers).getTilePosition();
+		}
+		int numIterations = 30;
 		Random rand = new Random();
-		for (int buildDistance = 5; buildDistance < 20; buildDistance++){
+		for (int tryDist = 0; tryDist < 30; tryDist++){
+			int buildDistance = (int) (Math.random()*25+5);
 			for (int i = 0; i < numIterations; i++) {
 				int x = rand.nextInt(2*buildDistance)-buildDistance;
 				int y = rand.nextInt(2*buildDistance)-buildDistance;
 				TilePosition pos = new TilePosition(approx.x()+x, approx.y()+y);
 				//TilePosition add_pos = new TilePosition(approx.x()+x+2, approx.y()+y+1);
-				if(builder.canBuildHere(pos, unit)){
+				if(!miningArea.withinHull(new Position(pos.x()*Tools.TILE_SIZE,pos.y()*Tools.TILE_SIZE))&&
+						builder.canBuildHere(pos, unit)){
 					return pos;
 				}
 			}
@@ -370,8 +388,8 @@ public class Governor extends Overseer {
 	public void mine(){
 		for(ROUnit w: allWorkers){
 			if(builders.containsKey(w)||(!w.isIdle()&&!w.isGatheringGas())||gasWorkers.contains(w)) {
-				if(builders.containsKey(w))
-					System.out.println("contains builder");
+				//if(builders.containsKey(w))
+					//System.out.println("contains builder");
 				continue;
 			}
 			gatherMinerals(UnitUtils.assumeControl(w));
@@ -381,7 +399,7 @@ public class Governor extends Overseer {
 	public void gas(){
 		List<ROUnit> refineries = UnitUtils.getAllMy(UnitType.TERRAN_REFINERY);
 		if(refineries.isEmpty()||!refineries.get(0).isCompleted()) return;
-		System.out.println(refineries);
+		//System.out.println(refineries);
 		
 		if(Game.getInstance().self().gas() > 200) {
 			gasWorkers.clear();
@@ -413,6 +431,7 @@ public class Governor extends Overseer {
 		executePlan();
 		gas();
 		mine();
+		miningArea.draw();
 	}
 	
 	public GameStage getGameStage() {

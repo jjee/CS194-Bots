@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.bwapi.proxy.model.Game;
+import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
@@ -14,11 +15,15 @@ import org.bwapi.proxy.model.UnitType;
 public class ArmyGroup {
 	private Set<Unit> units;
 	private boolean attacking;
+	private Position rallyPoint;
 	
 	public ArmyGroup(){
 		units = new HashSet<Unit>();
 		attacking = false;
 	}
+	
+	public void setRally(Position p){ rallyPoint = p; }
+	public Position getRally(){ return rallyPoint; }
 	
 	public Set<Unit> getUnits(){ return units; }
 	/**
@@ -58,6 +63,14 @@ public class ArmyGroup {
 			}
 		}
 		return false;
+	}
+	
+	public void rally(){
+		if(rallyPoint==null) return;
+		for(Unit u: units){
+			if(u.isIdle() && u.getPosition().getDistance(rallyPoint) > 500);
+				u.rightClick(rallyPoint);
+		}
 	}
 	
 	public ROUnit selectTarget(){

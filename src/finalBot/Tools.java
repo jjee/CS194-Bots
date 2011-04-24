@@ -13,7 +13,7 @@ import org.bwapi.proxy.model.Unit;
 import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
 public class Tools {
-	private static final int TILE_SIZE = 32;
+	static final int TILE_SIZE = 32;
 
 	public static int getMapDistance(){
 		return 0;
@@ -45,18 +45,26 @@ public class Tools {
 	}
 	
 	public static Position randomNearby(ROUnit u, int dist){
+		return randomNearby(u.getPosition(),dist);
+	}
+	
+	public static Position randomNearby(Position p, int dist){
 		int dx = (int)(Math.random()*dist-dist/2);
 		int dy = (int)(Math.random()*dist-dist/2);
-		int x = u.getPosition().x();
-		int y = u.getPosition().y();
+		int x = p.x();
+		int y = p.y();
 		int newx = x+dx;
 		int newy = y+dy;
-		while(true){
+		for(int i = 0; i <100; i++){
 			if(Game.getInstance().mapHeight()*TILE_SIZE>newy 
 					&& Game.getInstance().mapWidth()*TILE_SIZE > newx
-					&& newx > 0 && newy > 0)
+					&& newx > 0 && newy > 0
+					|| Game.getInstance().isWalkable(newx/4, newy/4))
 				return new Position(newx,newy);
+			dx = (int)(Math.random()*dist-dist/2);
+			dy = (int)(Math.random()*dist-dist/2);
 		}
+		return null;
 	}
 	
 	public static List<ROUnit> enemyUnits(){

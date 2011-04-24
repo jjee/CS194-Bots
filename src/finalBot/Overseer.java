@@ -21,6 +21,4 @@ public abstract class Overseer {
 	public void setSpecialist(Specialist specialist) {
 		this.specialist = specialist;
 	}
-	
-	public abstract void act();
 }

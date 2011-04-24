@@ -33,7 +33,7 @@ public class ProtossSpecialist extends Specialist {
 		//TODO: Formula for calculating defense depth
 		int totalAttackPotential = 0;
 		for (ROUnit u : scout.enemyGroundUnits()) {
-			totalAttackPotential += u.getGroundWeaponDamage() / u.getGroundWeaponCooldown() / 3;
+			totalAttackPotential += u.getGroundWeaponDamage() / (u.getGroundWeaponCooldown()+1) / 3;
 		}
 		if (totalAttackPotential < 10 && scout.getStaticDef() < 2) {
 			myAlert = Alert.NO_DEFENSE;

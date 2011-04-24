@@ -193,15 +193,21 @@ public class Governor extends Overseer {
 		return worker;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public boolean build(UnitType type, TilePosition tp) {
 		Unit builder = acquireBuilder(tp);
 		if (builder == null)
 			return false;
+		
 		if (!builder.isConstructing()&&!Game.getInstance().isVisible(tp)){
 			builder.rightClick(tp);
 			return false;
 		}
 		TilePosition actualTP = selectBuildLoc(type,tp, builder);
+		if(type == UnitType.TERRAN_REFINERY){
+			Set<ROUnit> geysers = (Set<ROUnit>) Game.getInstance().getStaticGeysers();
+			actualTP = UnitUtils.getClosest(builder.getPosition(), geysers).getTilePosition();
+		}
 		if (actualTP!=null) {
 			builder.build(tp, type);
 			builders.put(builder, type);
@@ -265,7 +271,7 @@ public class Governor extends Overseer {
 	
 	public void mine(){
 		for(ROUnit w: allWorkers){
-			if(builders.containsKey(w)) continue;
+			if(builders.containsKey(w)||!w.isIdle()) continue;
 			gatherMinerals(UnitUtils.assumeControl(w));
 		}
 	}

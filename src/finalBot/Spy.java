@@ -14,6 +14,7 @@ import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
+import org.bwapi.proxy.model.UnitType;
 import org.bwapi.proxy.model.WeaponType;
 
 public class Spy extends Overseer {
@@ -100,6 +101,25 @@ public class Spy extends Overseer {
 	// removes enemy from set
 	public void removeEnemyUnit(ROUnit unit) {
 		enemyUnits.remove(unit);
+	}
+	
+	public int getNumberOf(UnitType type){
+		int count = 0;
+		for(ROUnit u : enemyUnits){
+			if(u.getType()==type)
+				count++;
+		}
+		return count;
+	}
+	
+	public int getStaticDef(){
+		int count = 0;
+		for(ROUnit u : enemyUnits){
+			if(u.getType().isBuilding() && 
+					(u.getType().canAttack() || u.getType() == UnitType.TERRAN_BUNKER))
+				count++;
+		}
+		return count;
 	}
 	
 	// enemy armed air unit count

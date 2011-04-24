@@ -22,6 +22,7 @@ public class Spy extends Overseer {
 	private Map<TilePosition,Integer> scouted; //maps areas scouted to time scouted?
 	private Set<ROUnit> enemyUnits;
 	private Unit myScout;
+	private Unit comsat;
 	private TilePosition myHome; 
 	private static final int FRAMES_PER_MIN = 1440;
 	private static final int PIXEL_SCOUT_RANGE = 1000;
@@ -263,5 +264,9 @@ public class Spy extends Overseer {
 				bases.add(u);
 		}
 		return bases;
+	}
+	
+	public void assignComSat(Unit cs) {
+		comsat = cs;
 	}
 }

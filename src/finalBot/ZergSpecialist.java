@@ -9,11 +9,11 @@ public class ZergSpecialist extends Specialist {
 		// TODO Auto-generated method stub
 		
 	}
-
+	
 	@Override
-	public void act() {
+	public Alert getAlert() {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 }

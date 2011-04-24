@@ -4,16 +4,11 @@ import org.bwapi.proxy.model.ROUnit;
 
 public class ZergSpecialist extends Specialist {
 
-	@Override
-	public void update(ROUnit unit) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	@Override
-	public Alert getAlert() {
-		// TODO Auto-generated method stub
-		return null;
+	public void update() {
+
 	}
 
+	public void update(ROUnit unit) {
+
+	}
 }

@@ -1,5 +1,6 @@
 package finalBot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -46,10 +47,11 @@ public class Governor extends Overseer {
 	}
 	
 	//TODO
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public List<Pair<UnitType, TilePosition>> plan() {
 		//to start off, get state stuff
 		Player me = Game.getInstance().self();
-		
+		List<Pair<UnitType, TilePosition>> plan = new ArrayList<Pair<UnitType,TilePosition>>();
 		//resources
 		int availGas = me.gas();
 		int availMinerals = me.minerals();
@@ -67,48 +69,69 @@ public class Governor extends Overseer {
 		}
 		
 		//buildings
-		int barracks = UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS).size();
 		boolean hasAcademy = !UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).isEmpty();
 		boolean willHaveAcademy = false;
-		int comsats = UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).size();
-		int turrets = UnitUtils.getAllMy(UnitType.TERRAN_MISSILE_TURRET).size();
-		int bunkers = UnitUtils.getAllMy(UnitType.TERRAN_BUNKER).size();
-		int centers = UnitUtils.getAllMy(UnitType.TERRAN_COMMAND_CENTER).size();
-		
-		//mobile units
-		int marines = UnitUtils.getAllMy(UnitType.TERRAN_MARINE).size();
-		int medics = UnitUtils.getAllMy(UnitType.TERRAN_MEDIC).size();
-		int workers = allWorkers.size();
-		
+	
 		//upgrades
 		boolean hasStim = me.hasResearched(TechType.STIM_PACKS);
 		boolean hasRange = me.getUpgradeLevel(UpgradeType.U_238_SHELLS) == 1;
 		
+		HashMap<UnitType,Integer> futureAssets = new HashMap<UnitType,Integer>();
 		for(ROUnit u: builders.keySet()){
 			UnitType willHave = builders.get(u);
 			if (u.isConstructing() && u.getBuildUnit()==null){ //unit going to construct but
-				availMinerals -= willHave.mineralPrice();
+				availMinerals -= willHave.mineralPrice();		//haven't paid price yet
 				availGas -= willHave.gasPrice();
 			}
-			if (willHave == UnitType.TERRAN_BARRACKS){
-				barracks++;
-			} else if (willHave == UnitType.TERRAN_SUPPLY_DEPOT){
+			if(futureAssets.containsKey(willHave))
+				futureAssets.put(willHave,futureAssets.get(willHave)+1);
+			else
+				futureAssets.put(willHave,1);		
+			if (willHave == UnitType.TERRAN_SUPPLY_DEPOT){
 				supplyExpecting += 8;
 			} else if (willHave == UnitType.TERRAN_ACADEMY) {
 				willHaveAcademy = true;
-			} else if (willHave == UnitType.TERRAN_MISSILE_TURRET){
-				turrets++;
-			} else if (willHave == UnitType.TERRAN_BUNKER){
-				bunkers++;
-			} else if (willHave == UnitType.TERRAN_COMMAND_CENTER){
-				centers++;
 			}
 		}
 		
 		//plan given above state
+		List<ROUnit> centers = UnitUtils.getAllMy(UnitType.TERRAN_COMMAND_CENTER);
+		if(centers.isEmpty()) return null;
+		Unit center = UnitUtils.assumeControl(centers.get(0));
+		if(gamestage == GameStage.EARLY){	
+			earlyBuild(plan, availMinerals, supply, units, futureAssets, center);
+		} else if (gamestage == GameStage.MID){
+			if(availMinerals >=100&& supply + supplyExpecting < 2 + units.get(UnitType.TERRAN_BARRACKS)){
+				plan.add(new Pair(UnitType.TERRAN_SUPPLY_DEPOT,center.getTilePosition()));
+				availMinerals-=100;
+			}
+		} else {
+
+		}
 		
 		
 		return null;
+	}
+
+	private void earlyBuild(List<Pair<UnitType, TilePosition>> plan,
+			int availMinerals, int supply, HashMap<UnitType, Integer> units,
+			HashMap<UnitType, Integer> futureAssets, Unit center) {
+		if(8 > units.get(UnitType.TERRAN_SCV) + futureAssets.get(UnitType.TERRAN_SCV)){
+			if(supply > 1 && availMinerals >= 50)
+				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_SCV,null));
+		} else if (units.get(UnitType.TERRAN_SUPPLY_DEPOT) + futureAssets.get(UnitType.TERRAN_SUPPLY_DEPOT) == 0) {
+			if(availMinerals >= 100)
+				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_SUPPLY_DEPOT,center.getTilePosition()));
+		} else if(11 > units.get(UnitType.TERRAN_SCV) + futureAssets.get(UnitType.TERRAN_SCV)){
+			if(supply > 1 && availMinerals >= 50)
+				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_SCV,null));
+		} else if(units.get(UnitType.TERRAN_BARRACKS) + futureAssets.get(UnitType.TERRAN_BARRACKS) < 1){
+			if(availMinerals >= 150)
+				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_BARRACKS,center.getTilePosition()));
+		} else if(units.get(UnitType.TERRAN_REFINERY) + futureAssets.get(UnitType.TERRAN_REFINERY) < 1){
+			if(availMinerals >= 50)
+				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_REFINERY,center.getTilePosition()));
+		}
 	}
 	
 	public void executePlan() {
@@ -238,8 +261,35 @@ public class Governor extends Overseer {
 			worker.rightClick(closestRefinery);		
 	}
 	
+	public void mine(){
+		for(ROUnit w: allWorkers){
+			if(builders.containsKey(w)) continue;
+			gatherMinerals(UnitUtils.assumeControl(w));
+		}
+	}
+	
+	public void gas(){
+		List<ROUnit> refineries = UnitUtils.getAllMy(UnitType.TERRAN_REFINERY);
+		if(!refineries.isEmpty()) return;
+		if(Game.getInstance().self().gas() > 200) return;
+		int gasCount = 0;
+		for(ROUnit w: allWorkers){
+			if(w.isGatheringGas())
+				gasCount++;
+		}
+		for(ROUnit w: allWorkers){
+			if (gasCount>=3) return;
+			if(!w.isGatheringGas() && builders.containsKey(w)){
+				gatherGas(UnitUtils.assumeControl(w));
+				gasCount++;
+			}
+		}
+	}
+	
 	public void act(){
-		
+		executePlan();
+		mine();
+		gas();
 	}
 	
 	public GameStage getGameStage() {

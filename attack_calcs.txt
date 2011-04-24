@@ -1,0 +1,10 @@
+Unit		Damage	Cooldown
+
+marine 		6 	15
+vulture 	20 	30
+firebat 	8 	22
+tank 		30 	27
+goliath 	12 	22
+
+zealot		8	22
+dragoon		20	30

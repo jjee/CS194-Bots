@@ -19,6 +19,7 @@ import org.bwapi.proxy.model.UnitType;
 import org.bwapi.proxy.model.UpgradeType;
 import org.bwapi.proxy.util.Pair;
 
+import edu.berkeley.nlp.starcraft.util.Counter;
 import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
 public class Governor extends Overseer {
@@ -63,12 +64,12 @@ public class Governor extends Overseer {
 		
 		
 		// general
-		HashMap<UnitType,Integer> units = new HashMapInit0<UnitType,Integer>();
+		Counter<UnitType> units = new Counter<UnitType>();
 		for(ROUnit u : Game.getInstance().self().getUnits()) {
 			if(units.containsKey(u.getType()))
-				units.put(u.getType(),units.get(u.getType())+1);
+				units.setCount(u.getType(),units.getCount(u.getType())+1);
 			else
-				units.put(u.getType(),1);
+				units.setCount(u.getType(),1);
 		}
 		
 		//buildings
@@ -79,7 +80,7 @@ public class Governor extends Overseer {
 		boolean hasStim = me.hasResearched(TechType.STIM_PACKS);
 		boolean hasRange = me.getUpgradeLevel(UpgradeType.U_238_SHELLS) == 1;
 		
-		HashMap<UnitType,Integer> futureAssets = new HashMapInit0<UnitType,Integer>();
+		Counter<UnitType> futureAssets = new Counter<UnitType>();
 		for(ROUnit u: builders.keySet()){
 			UnitType willHave = builders.get(u);
 			if (u.getBuildUnit()==null){ //unit going to construct but
@@ -87,9 +88,9 @@ public class Governor extends Overseer {
 				availGas -= willHave.gasPrice();
 			}
 			if(futureAssets.containsKey(willHave))
-				futureAssets.put(willHave,futureAssets.get(willHave)+1);
+				futureAssets.setCount(willHave,futureAssets.getCount(willHave)+1);
 			else
-				futureAssets.put(willHave,1);		
+				futureAssets.setCount(willHave,1);		
 			if (willHave == UnitType.TERRAN_SUPPLY_DEPOT){
 				supplyExpecting += 8;
 			} else if (willHave == UnitType.TERRAN_ACADEMY) {
@@ -104,7 +105,7 @@ public class Governor extends Overseer {
 		if(gamestage == GameStage.EARLY){	
 			earlyBuild(plan, availMinerals, supply, units, futureAssets, center);
 		} else if (gamestage == GameStage.MID){
-			if(availMinerals >=100&& supply + supplyExpecting < 2 + units.get(UnitType.TERRAN_BARRACKS)){
+			if(availMinerals >=100&& supply + supplyExpecting < 2 + units.getCount(UnitType.TERRAN_BARRACKS)){
 				plan.add(new Pair(UnitType.TERRAN_SUPPLY_DEPOT,center.getTilePosition()));
 				availMinerals-=100;
 			}
@@ -121,21 +122,21 @@ public class Governor extends Overseer {
 	}
 
 	private void earlyBuild(List<Pair<UnitType, TilePosition>> plan,
-			int availMinerals, int supply, HashMap<UnitType, Integer> units,
-			HashMap<UnitType, Integer> futureAssets, Unit center) {
-		if(8 > units.get(UnitType.TERRAN_SCV) + futureAssets.get(UnitType.TERRAN_SCV)){
+			int availMinerals, int supply, Counter<UnitType> units,
+			Counter<UnitType> futureAssets, Unit center) {
+		if(8 > units.getCount(UnitType.TERRAN_SCV) + futureAssets.getCount(UnitType.TERRAN_SCV)){
 			if(supply > 1 && availMinerals >= 50)
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_SCV,null));
-		} else if (units.get(UnitType.TERRAN_SUPPLY_DEPOT) + futureAssets.get(UnitType.TERRAN_SUPPLY_DEPOT) == 0) {
+		} else if (units.getCount(UnitType.TERRAN_SUPPLY_DEPOT) + futureAssets.getCount(UnitType.TERRAN_SUPPLY_DEPOT) == 0) {
 			if(availMinerals >= 100)
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_SUPPLY_DEPOT,center.getTilePosition()));
-		} else if(11 > units.get(UnitType.TERRAN_SCV) + futureAssets.get(UnitType.TERRAN_SCV)){
+		} else if(11 > units.getCount(UnitType.TERRAN_SCV) + futureAssets.getCount(UnitType.TERRAN_SCV)){
 			if(supply > 1 && availMinerals >= 50)
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_SCV,null));
-		} else if(units.get(UnitType.TERRAN_BARRACKS) + futureAssets.get(UnitType.TERRAN_BARRACKS) < 1){
+		} else if(units.getCount(UnitType.TERRAN_BARRACKS) + futureAssets.getCount(UnitType.TERRAN_BARRACKS) < 1){
 			if(availMinerals >= 150)
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_BARRACKS,center.getTilePosition()));
-		} else if(units.get(UnitType.TERRAN_REFINERY) + futureAssets.get(UnitType.TERRAN_REFINERY) < 1){
+		} else if(units.getCount(UnitType.TERRAN_REFINERY) + futureAssets.getCount(UnitType.TERRAN_REFINERY) < 1){
 			if(availMinerals >= 50)
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_REFINERY,center.getTilePosition()));
 		}

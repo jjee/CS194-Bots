@@ -5,6 +5,7 @@ import java.util.List;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Player;
 import org.bwapi.proxy.model.ROUnit;
+import org.bwapi.proxy.model.Race;
 import org.bwapi.proxy.model.UnitType;
 
 import edu.berkeley.nlp.starcraft.AbstractCerebrate;
@@ -16,11 +17,13 @@ import edu.berkeley.nlp.starcraft.scripting.Thunk;
 import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
 public class FinalBot extends AbstractCerebrate implements Strategy {
-	JythonInterpreter jython = new JythonInterpreter();
-	Governor governor;
-	Commander commander;
-	Spy spy;
-	Player me;
+	private JythonInterpreter jython = new JythonInterpreter();
+	private Governor governor;
+	private Commander commander;
+	private Spy spy;
+	private Specialist specialist;
+	private Player me;
+	private Player enemy;
 
 	@Override
 	public List<Cerebrate> getTopLevelCerebrates() {
@@ -34,20 +37,39 @@ public class FinalBot extends AbstractCerebrate implements Strategy {
 		spy.act();
 		governor.act();
 		commander.act();
+		specialist.update();
 	}
 
 	@Override
 	public void onStart() {
+		me = Game.getInstance().self();
+		for (Player p : Game.getInstance().getPlayers())
+			if (me.isEnemy(p))
+				enemy = p;
+		
 		governor = new Governor();
 		commander = new Commander();
 		spy = new Spy();
-		me = Game.getInstance().self();
+		
+		if (enemy.getRace() == Race.TERRAN)
+			specialist = new TerranSpecialist();
+		else if (enemy.getRace() == Race.PROTOSS)
+			specialist = new ProtossSpecialist();
+		else
+			specialist = new ZergSpecialist();
+		
 		spy.setCommander(commander);
 		spy.setGovernor(governor);
+		spy.setSpecialist(specialist);
 		commander.setGovernor(governor);
 		commander.setSpy(spy);
+		commander.setSpecialist(specialist);
 		governor.setCommander(commander);
 		governor.setSpy(spy);
+		governor.setSpecialist(specialist);
+		specialist.setGovernor(governor);
+		specialist.setCommander(commander);
+		specialist.setSpy(spy);
 		
 		List<ROUnit> myWorkers = UnitUtils.getAllMy(UnitType.TERRAN_SCV);
 		for(ROUnit w: myWorkers){
@@ -91,6 +113,7 @@ public class FinalBot extends AbstractCerebrate implements Strategy {
 	public void onUnitShow(ROUnit unit) {
 		if(me.isEnemy(unit.getPlayer())){
 			spy.addEnemyUnit(unit);
+			specialist.update(unit);
 			return;
 		}
 	}

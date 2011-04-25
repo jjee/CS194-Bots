@@ -164,6 +164,7 @@ public class Governor extends Overseer {
 			 } else if (availMinerals < 75) {
 					airDealt = true;
 			}
+			availMinerals-=75;
 		}
 		if(cloakDetect && !cloakDealt){
 			if(availMinerals >= 75 && turretNec < units.getCount(UnitType.TERRAN_MISSILE_TURRET) + units.getCount(UnitType.TERRAN_MISSILE_TURRET)){
@@ -173,6 +174,7 @@ public class Governor extends Overseer {
 			} else if (availMinerals < 75) {
 				cloakDealt = true;
 			}
+			availMinerals-=75;
 		}
 		if(availMinerals >=100&& supply + supplyExpecting < 2 + 2*(1+units.getCount(UnitType.TERRAN_BARRACKS))){
 			plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_SUPPLY_DEPOT,center.getTilePosition()));

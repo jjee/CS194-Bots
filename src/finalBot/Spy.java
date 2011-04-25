@@ -209,8 +209,8 @@ public class Spy extends Overseer {
 		scouted.add(myHome);
 		updateEnemyUnits();
 		if(comsat != null) {
-			if(!enemyBases().isEmpty())
-				comsat.useTech(TechType.SCANNER_SWEEP,enemyBases().get(0).getLastKnownPosition());
+			if(enemyBuildings() > 0 && comsat.getEnergy() >= 50)
+				comsat.useTech(TechType.SCANNER_SWEEP,randomEnemyBuilding().getLastKnownPosition());
 		}
 		
 		// grab new scout if scout died or have no scout
@@ -274,6 +274,15 @@ public class Spy extends Overseer {
 				buildings++;
 		}
 		return buildings;
+	}
+	
+	private ROUnit randomEnemyBuilding() {
+		List<ROUnit> enemyBuildings = new LinkedList<ROUnit>();
+		for(ROUnit u : enemyUnits) {
+			if(u.getType().isBuilding())
+				enemyBuildings.add(u);
+		}
+		return enemyBuildings.get((int) Math.random()*enemyBuildings.size());
 	}
 	
 	// list of units on ground, includes both buildings and forces

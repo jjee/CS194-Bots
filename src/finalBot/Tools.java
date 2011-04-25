@@ -96,7 +96,7 @@ public class Tools {
 		double best = 10000;
 		ROUnit bestu = null;
 		for(ROUnit u: units){
-			double d = u.getDistance(p);
+			double d = u.getLastKnownPosition().getDistance(p);
 			if(d < best){
 				best = d;
 				bestu = u;

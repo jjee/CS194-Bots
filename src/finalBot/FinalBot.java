@@ -84,8 +84,7 @@ public class FinalBot extends AbstractCerebrate implements Strategy {
 		
 		if(unit.getType().isWorker()){
 			governor.addWorker(UnitUtils.assumeControl(unit));
-		}
-		if(!unit.getType().isBuilding()){
+		} else if(unit.getType()==UnitType.TERRAN_MARINE || unit.getType()==UnitType.TERRAN_MEDIC){
 			commander.addAttacker(UnitUtils.assumeControl(unit));
 		}
 	}
@@ -99,7 +98,7 @@ public class FinalBot extends AbstractCerebrate implements Strategy {
 		
 		if(unit.getType().isWorker()){
 			governor.removeWorker(UnitUtils.assumeControl(unit));
-		} else {
+		} else if(unit.getType()==UnitType.TERRAN_MARINE || unit.getType()==UnitType.TERRAN_MEDIC){
 			commander.removeAttacker(UnitUtils.assumeControl(unit));
 		}
 	}

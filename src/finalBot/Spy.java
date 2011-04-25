@@ -219,7 +219,7 @@ public class Spy extends Overseer {
 			return;
 		}
 		
-		if(myScout != null && !attackingGroundUnits().isEmpty()) {
+		if(!attackingGroundUnits().isEmpty()) {
 			int maxAtkRange = maxGroundRange();
 			//int maxAtkRange = 7;
 			if(Tools.close(myScout, attackingGroundUnits(), maxAtkRange)) {
@@ -230,6 +230,7 @@ public class Spy extends Overseer {
 			} else if(retreat) {
 				retreat = false;
 				myScout.stop();
+				return;
 			}
 		}
 		
@@ -241,16 +242,11 @@ public class Spy extends Overseer {
 			}
 			findEnemy();
 			//System.out.println("looking for enemy");
-		}
-		
-		
-		if(myScout.isIdle() || myScout.isStopped()) {
+		} else if(myScout.isIdle() || myScout.isStopped()) {
 			looking = false;
 			scoutEnemy();
 			//System.out.println("scouting");
-		}
-		
-		if((myScout.isIdle() || myScout.isStopped()) && !enemyBases().isEmpty()) {
+		} else if((myScout.isIdle() || myScout.isStopped()) && !enemyBases().isEmpty()) {
 			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());
 			if(target!=null)
 				myScout.attack(target);

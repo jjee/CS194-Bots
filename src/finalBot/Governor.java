@@ -409,12 +409,18 @@ public class Governor extends Overseer {
 		}
 		if (units.isEmpty())
 			return null;
-		System.out.println(units);
-		return UnitUtils.assumeControl(Tools.findClosest(units, tp));
+		ROUnit u = Tools.findClosest(units, tp);
+		System.out.println(u);
+		if(u==null){
+			System.out.println("no builder found");
+			return null;
+		}
+		return UnitUtils.assumeControl(u);
 	}
 	
 	public Unit pullWorker(TilePosition tp) {
 		Unit worker = acquireBuilder(tp);
+		if(worker==null) return null;
 		allWorkers.remove(worker);
 		return worker;
 	}

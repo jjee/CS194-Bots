@@ -33,7 +33,7 @@ public class Commander extends Overseer {
 		List<ROUnit> bunkers = UnitUtils.getAllMy(UnitType.TERRAN_BUNKER);
 		boolean loaded = false;
 		for (ROUnit b: bunkers) {
-			if (b.getLoadedUnits().size() < 4) {
+			if (b.isCompleted() &&b.getLoadedUnits().size() < 4) {
 				UnitUtils.assumeControl(b).load(u);
 				loaded = true;
 			}
@@ -187,7 +187,7 @@ public class Commander extends Overseer {
 		
 		if(armyUnits.size()> totalEnemyForces){
 			for(ArmyGroup g: marineMedicGroups){
-				if(!g.isAttacking()){
+				if(!g.isAttacking() && armyUnits.size() >20){
 					g.setAttack(true);
 				}
 			}

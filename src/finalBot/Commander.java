@@ -22,8 +22,6 @@ public class Commander extends Overseer {
 	private Set<Unit> armyUnits; //all units under attacker control
 	private List<ArmyGroup> marineMedicGroups;
 	private int attackCount; //number of times we tried to attack
-	private int reGatherTime = 0;
-	private final int REGATHER = 1000;
 	
 	public Commander(){
 		armyUnits = new HashSet<Unit>();
@@ -110,16 +108,12 @@ public class Commander extends Overseer {
 			g.setAttack(true);
 			attackCount++;
 		}
-		g.setRally(pos);
-		if(!g.underAttack() && g.getLocation().getDistance(pos) < 30){
-			if(!g.gather()) return;
-//			System.out.println("gathering");
-		}
+		
 		Set<Unit> marines = g.getUnits(UnitType.TERRAN_MARINE);
 		Set<Unit> medics = g.getUnits(UnitType.TERRAN_MEDIC);
 		ROUnit target = g.selectTarget();
 		for(Unit m: marines){
-			if(target==null && m.isIdle())
+			if(m.isIdle())
 				m.attackMove(pos);
 			
 			if(target!=null && target.isVisible() &&
@@ -193,7 +187,7 @@ public class Commander extends Overseer {
 		
 		if(armyUnits.size()> totalEnemyForces){
 			for(ArmyGroup g: marineMedicGroups){
-				if(!g.isAttacking() && g.getUnits().size() >= 10){
+				if(!g.isAttacking()){
 					g.setAttack(true);
 				}
 			}

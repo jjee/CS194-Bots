@@ -207,10 +207,10 @@ public class Spy extends Overseer {
 	
 	public void act(){
 		scouted.add(myHome);
-		
+		updateEnemyUnits();
 		if(comsat != null) {
 			if(!enemyBases().isEmpty())
-				comsat.useTech(TechType.SCANNER_SWEEP,enemyBases().get(0).getPosition());
+				comsat.useTech(TechType.SCANNER_SWEEP,enemyBases().get(0).getLastKnownPosition());
 		}
 		
 		// grab new scout if scout died or have no scout

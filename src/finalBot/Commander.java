@@ -37,7 +37,7 @@ public class Commander extends Overseer {
 		List<ROUnit> bunkers = UnitUtils.getAllMy(UnitType.TERRAN_BUNKER);
 		boolean loaded = false;
 		for (ROUnit b: bunkers) {
-			if (b.isCompleted() &&b.getLoadedUnits().size() < 4) {
+			if (u.isCompleted()&&b.isCompleted() &&b.getLoadedUnits().size() < 4) {
 				UnitUtils.assumeControl(b).load(u);
 				loaded = true;
 			}
@@ -47,9 +47,6 @@ public class Commander extends Overseer {
 	
 	public void addAttacker(Unit u) { //add a unit for attacker class to use
 		armyUnits.add(u);
-		
-		if(useBunkers(u))
-			return;
 		
 		//add to some group
 		UnitType type = u.getType();
@@ -134,6 +131,7 @@ public class Commander extends Overseer {
 				if(c.isIdle()){
 					c.rightClick(builder.getHome());
 				}
+				return;
 			}
 			if(5 < c.getTilePosition().getDistance(medics.get(c).getTilePosition())){
 				c.rightClick(medics.get(c).getTilePosition());
@@ -148,6 +146,7 @@ public class Commander extends Overseer {
 				attackingGroups.add(g);
 			}
 		}
+		if(attackingGroups.isEmpty()) attackingGroups = marineGroups;
 		if(attackingGroups.isEmpty()) return null;
 		int randomGroup = (int) (Math.random()*attackingGroups.size());
 		int randomMarine = (int) (Math.random()*attackingGroups.get(randomGroup).getUnits().size());
@@ -198,10 +197,20 @@ public class Commander extends Overseer {
 		Set <ArmyGroup> toRemove = new HashSet<ArmyGroup>();
 		
 		for(ArmyGroup g: marineGroups){
+			Set<Unit> bunkerUnits = new HashSet<Unit>();
+			for(Unit u: g.getUnits()){
+				if(useBunkers(u)){
+					bunkerUnits.add(u);
+				}
+			}
+			for(Unit u: bunkerUnits){
+				g.remove(u);
+			}
 			if(g.getUnits().isEmpty()){
 				toRemove.add(g);
 				continue;
 			}
+			
 			if(!g.isAttacking()){
 				g.rally();
 			}else{

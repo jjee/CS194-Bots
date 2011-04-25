@@ -35,7 +35,7 @@ public class Governor extends Overseer {
 	private final int REBUILD_TIME = 30;
 	private ROUnit naturalBase;
 	private ConvexHull miningArea;
-	private boolean rushDetect = true, cloakDetect = false, airDetect = false;
+	private boolean rushDetect = false, cloakDetect = false, airDetect = false;
 	private boolean rushDealt = false, cloakDealt = false, airDealt = false;
 	private boolean scan = false;
 	public Governor() {
@@ -234,8 +234,9 @@ public class Governor extends Overseer {
 		if(units.getCount(UnitType.TERRAN_BUNKER)+futureAssets.getCount(UnitType.TERRAN_BUNKER)<2){
 			if(availMinerals>=100){
 				Position choke = attacker.closestChoke(naturalBase);
-				TilePosition chokeTile = new TilePosition(choke.x()*Tools.TILE_SIZE,choke.y()*Tools.TILE_SIZE);
-				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_BUNKER,naturalBase.getTilePosition()));
+				TilePosition chokeTile = new TilePosition(choke.x()/Tools.TILE_SIZE,choke.y()/Tools.TILE_SIZE);
+				System.out.println(chokeTile);
+				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_BUNKER,chokeTile));
 			}	
 			availMinerals-=100;
 			notDealt = true;
@@ -436,6 +437,7 @@ public class Governor extends Overseer {
 		
 		if (!builder.isConstructing()&&!Game.getInstance().isVisible(tp)){
 			builder.rightClick(tp);
+			builders.put(builder, type);
 			return false;
 		}
 		TilePosition actualTP = selectBuildLoc(type,tp, builder);
@@ -463,7 +465,7 @@ public class Governor extends Overseer {
 				TilePosition pos = new TilePosition(approx.x()+x, approx.y()+y);
 				//TilePosition add_pos = new TilePosition(approx.x()+x+2, approx.y()+y+1);
 				if(!miningArea.withinHull(new Position(pos.x()*Tools.TILE_SIZE,pos.y()*Tools.TILE_SIZE))&&
-						builder.canBuildHere(pos, unit)){
+						builder.canBuildHere(pos, unit) && Game.getInstance().isVisible(pos)){
 					return pos;
 				}
 			}

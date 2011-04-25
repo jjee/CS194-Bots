@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.ROUnit;
+import org.bwapi.proxy.model.TechType;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
 import org.bwapi.proxy.model.UnitType;
@@ -206,6 +207,11 @@ public class Spy extends Overseer {
 	
 	public void act(){
 		scouted.add(myHome);
+		
+		if(comsat != null) {
+			if(!enemyBases().isEmpty())
+				comsat.useTech(TechType.SCANNER_SWEEP,enemyBases().get(0).getPosition());
+		}
 		
 		// grab new scout if scout died or have no scout
 		if(myScout==null || !myScout.isVisible()) {

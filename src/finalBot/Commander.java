@@ -31,8 +31,23 @@ public class Commander extends Overseer {
 		attackCount = 0;
 	}
 	
+	public boolean useBunkers(Unit u){
+		List<ROUnit> bunkers = UnitUtils.getAllMy(UnitType.TERRAN_BUNKER);
+		boolean loaded = false;
+		for (ROUnit b: bunkers) {
+			if (b.getLoadedUnits().size() < 4) {
+				UnitUtils.assumeControl(b).load(u);
+				loaded = true;
+			}
+		}
+		return loaded;
+	}
+	
 	public void addAttacker(Unit u) { //add a unit for attacker class to use
 		armyUnits.add(u);
+		
+		if(useBunkers(u))
+			return;
 		
 		//add to some group
 		UnitType type = u.getType();

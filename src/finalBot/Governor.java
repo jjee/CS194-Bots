@@ -408,6 +408,7 @@ public class Governor extends Overseer {
 		}
 		if (units.isEmpty())
 			return null;
+		System.out.println(units);
 		return UnitUtils.assumeControl(Tools.findClosest(units, tp));
 	}
 	

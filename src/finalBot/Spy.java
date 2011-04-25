@@ -282,7 +282,7 @@ public class Spy extends Overseer {
 			if(u.getType().isBuilding())
 				enemyBuildings.add(u);
 		}
-		return enemyBuildings.get((int) Math.random()*enemyBuildings.size());
+		return enemyBuildings.get((int) (Math.random()*enemyBuildings.size()));
 	}
 	
 	// list of units on ground, includes both buildings and forces

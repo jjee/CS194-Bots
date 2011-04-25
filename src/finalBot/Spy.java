@@ -22,7 +22,7 @@ public class Spy extends Overseer {
 	private Unit myScout;
 	private Unit comsat;
 	private TilePosition myHome; 
-	private static final int PIXEL_SCOUT_RANGE = 2000;
+	private static final int PIXEL_SCOUT_RANGE = 500;
 	private boolean retreat;
 	private boolean firstScout;
 	

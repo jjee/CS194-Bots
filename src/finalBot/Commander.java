@@ -31,8 +31,23 @@ public class Commander extends Overseer {
 		attackCount = 0;
 	}
 	
+	public boolean useBunkers(Unit u){
+		List<ROUnit> bunkers = UnitUtils.getAllMy(UnitType.TERRAN_BUNKER);
+		boolean loaded = false;
+		for (ROUnit b: bunkers) {
+			if (b.getLoadedUnits().size() < 4) {
+				UnitUtils.assumeControl(b).load(u);
+				loaded = true;
+			}
+		}
+		return loaded;
+	}
+	
 	public void addAttacker(Unit u) { //add a unit for attacker class to use
 		armyUnits.add(u);
+		
+		if(useBunkers(u))
+			return;
 		
 		//add to some group
 		UnitType type = u.getType();
@@ -98,7 +113,7 @@ public class Commander extends Overseer {
 		g.setRally(pos);
 		if(!g.underAttack() && g.getLocation().getDistance(pos) < 30){
 			if(!g.gather()) return;
-			System.out.println("gathering");
+//			System.out.println("gathering");
 		}
 		Set<Unit> marines = g.getUnits(UnitType.TERRAN_MARINE);
 		Set<Unit> medics = g.getUnits(UnitType.TERRAN_MEDIC);

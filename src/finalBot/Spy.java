@@ -243,6 +243,9 @@ public class Spy extends Overseer {
 			//System.out.println("looking for enemy");
 		}
 		
+		if(myScout.isIdle())
+			myScout.stop();
+		
 		
 		if(myScout.isIdle() || myScout.isStopped()) {
 			looking = false;

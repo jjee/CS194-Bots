@@ -8,3 +8,8 @@ goliath 	12 	22
 
 zealot		8	22
 dragoon		20	30
+
+zergling	5	8
+mutalisk	9	30
+hydralisk	10	15	
+lurker		20	37	

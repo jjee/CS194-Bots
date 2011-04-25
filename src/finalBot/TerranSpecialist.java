@@ -29,7 +29,7 @@ public class TerranSpecialist extends Specialist {
 		if (Game.getInstance().getFrameCount() - lastFrameObserved > LATENCY) {
 			myState = State.NONE;
 			myAlert = Alert.NONE;
-		}
+		} else return;
 		
 		//TODO: Formula for calculating defense depth
 		int totalAttackPotential = 0;

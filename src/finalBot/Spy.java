@@ -25,6 +25,7 @@ public class Spy extends Overseer {
 	private static final int PIXEL_SCOUT_RANGE = 500;
 	private boolean retreat;
 	private boolean firstScout;
+	private boolean noFuture;
 	
 	public Spy() {
 		scouted = new HashSet<TilePosition>();
@@ -32,6 +33,7 @@ public class Spy extends Overseer {
 		myHome = Game.getInstance().self().getStartLocation();
 		retreat = false;
 		firstScout = true;
+		noFuture = false;
 	}
 	
 	// grabs SCV from builder for scouting
@@ -87,7 +89,7 @@ public class Spy extends Overseer {
 	private void scoutExpansions() {
 		List<TilePosition> potentialExpansions = new LinkedList<TilePosition>();
 		for(ROUnit u : Game.getInstance().getStaticGeysers()) {
-			if(Tools.close((Unit) u, enemyGroundUnits(), PIXEL_SCOUT_RANGE))
+			if(Tools.close((Unit) u, enemyBases(), PIXEL_SCOUT_RANGE))
 				potentialExpansions.add(u.getLastKnownTilePosition());
 		}
 		for(TilePosition tp : potentialExpansions) {
@@ -208,7 +210,7 @@ public class Spy extends Overseer {
 		// grab new scout if scout died or have no scout
 		if(myScout==null || !myScout.isVisible()) {
 			// only get scout if have enough scv's
-			if(UnitUtils.getAllMy(UnitType.TERRAN_SCV).size() >= 11)
+			if(UnitUtils.getAllMy(UnitType.TERRAN_SCV).size() >= 11 && !noFuture) 
 				assignScout(myHome);
 			else
 				return;
@@ -220,6 +222,7 @@ public class Spy extends Overseer {
 			return;
 		}
 		
+		noFuture = true;
 		
 		// retreat if there are attacking ground units
 		if(!attackingGroundUnits().isEmpty()) {
@@ -250,7 +253,7 @@ public class Spy extends Overseer {
 		else if((myScout.isIdle() || myScout.isStopped()) && !enemyBases().isEmpty()) {
 			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());
 			if(target!=null)
-				myScout.attack(target);
+				myScout.move(target.getLastKnownPosition());
 		}
 		updateEnemyUnits();
 	}

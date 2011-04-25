@@ -1,8 +1,10 @@
 package finalBot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.bwapi.proxy.model.Bwta;
@@ -20,12 +22,14 @@ import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
 public class Commander extends Overseer {
 	private Set<Unit> armyUnits; //all units under attacker control
-	private List<ArmyGroup> marineMedicGroups;
+	private List<ArmyGroup> marineGroups;
+	private Map<Unit,Unit> medics;
 	private int attackCount; //number of times we tried to attack
 	
 	public Commander(){
 		armyUnits = new HashSet<Unit>();
-		marineMedicGroups = new ArrayList<ArmyGroup>();
+		marineGroups = new ArrayList<ArmyGroup>();
+		medics = new HashMap<Unit,Unit>();
 		attackCount = 0;
 	}
 	
@@ -49,20 +53,12 @@ public class Commander extends Overseer {
 		
 		//add to some group
 		UnitType type = u.getType();
-		if(type==UnitType.TERRAN_MARINE || type==UnitType.TERRAN_MEDIC){
-			int threshold = 0;
+		if(type==UnitType.TERRAN_MARINE){
 			ArmyGroup choice = null;
-			if(type==UnitType.TERRAN_MARINE){
-				threshold = 8;
-			} else if (type==UnitType.TERRAN_MEDIC){
-				threshold = 2;
-			}
 			
-			for(ArmyGroup g: marineMedicGroups){
+			for(ArmyGroup g: marineGroups){
 				if(!g.isAttacking()) {
-					if(g.getUnits(type).size() < threshold){
-						choice = g;
-					}
+					choice = g;
 				}
 			}
 			
@@ -72,7 +68,9 @@ public class Commander extends Overseer {
 				choice.setRally(Tools.randomNearby(chokeCenter,100));
 			}
 			choice.add(u);
-			marineMedicGroups.add(choice);
+			marineGroups.add(choice);
+		} else if(type==UnitType.TERRAN_MEDIC){
+			medics.put(u,null);
 		}
 	}
 	
@@ -92,13 +90,15 @@ public class Commander extends Overseer {
 	
 	public void removeAttacker(Unit u) { //remove unit from attacker class
 		armyUnits.remove(u);
-		if(u.getType()==UnitType.TERRAN_MARINE||u.getType()==UnitType.TERRAN_MEDIC){
-			for(ArmyGroup g: marineMedicGroups){
+		if(u.getType()==UnitType.TERRAN_MARINE){
+			for(ArmyGroup g: marineGroups){
 				if(g.getUnits().contains(u)){
 					g.remove(u);
 					return;
 				}
 			}
+		} else if(u.getType()==UnitType.TERRAN_MEDIC){
+			medics.remove(u);
 		}
 	}
 
@@ -110,7 +110,6 @@ public class Commander extends Overseer {
 		}
 		
 		Set<Unit> marines = g.getUnits(UnitType.TERRAN_MARINE);
-		Set<Unit> medics = g.getUnits(UnitType.TERRAN_MEDIC);
 		ROUnit target = g.selectTarget();
 		for(Unit m: marines){
 			if(m.isIdle())
@@ -124,28 +123,43 @@ public class Commander extends Overseer {
 				
 			}
 		}
-		Set<Unit> changeGroups = new HashSet<Unit>();
-		for(Unit c: medics){
-			if(marines.size()==0){
-				changeGroups.add(c);
-			}else if(c.isIdle()&&!g.underAttack()){
-				if(UnitUtils.avePos(marines)!=null)
-					c.rightClick(UnitUtils.avePos(marines));
+	}
+	
+	private void heal(){
+		for(Unit c : medics.keySet()){
+			if(medics.get(c)==null || !medics.get(c).exists()){
+				medics.put(c, healTarget());
 			}
+			if(medics.get(c)==null || !medics.get(c).exists()){
+				if(c.isIdle()){
+					c.rightClick(builder.getHome());
+				}
+			}
+			if(5 < c.getTilePosition().getDistance(medics.get(c).getTilePosition())){
+				c.rightClick(medics.get(c).getTilePosition());
+			}
+		}
+	}
+	
+	private Unit healTarget(){
+		List<ArmyGroup> attackingGroups = new ArrayList<ArmyGroup>();
+		for(ArmyGroup g: marineGroups){
+			if(g.isAttacking() && !g.getUnits().isEmpty()){
+				attackingGroups.add(g);
+			}
+		}
+		if(attackingGroups.isEmpty()) return null;
+		int randomGroup = (int) (Math.random()*attackingGroups.size());
+		int randomMarine = (int) (Math.random()*attackingGroups.get(randomGroup).getUnits().size());
+		ArmyGroup g = attackingGroups.get(randomGroup);
+		int i = 0;
+		Unit choice = null;
+		for(Unit m: g.getUnits()){
+			if(i==randomMarine) choice = m;
+			i++;
 		}
 		
-		for(Unit c: changeGroups){
-			ArmyGroup choice = null;
-			for(ArmyGroup changeG: marineMedicGroups){
-				choice = changeG;
-			}
-			if(changeGroups==null){
-				c.rightClick(builder.getHome());
-				choice = new ArmyGroup();
-			}
-			g.remove(c);
-			choice.add(c);
-		}
+		return choice;
 	}
 	
 	private void retreat(ArmyGroup g) {//retreat group
@@ -162,7 +176,7 @@ public class Commander extends Overseer {
 	}
 	
 	public void updateGroups(){
-		for(ArmyGroup g: marineMedicGroups){
+		for(ArmyGroup g: marineGroups){
 			Set<Unit> toRemove = new HashSet<Unit>();
 			Set<Unit> gUnits = g.getUnits();
 			for(Unit u: gUnits){
@@ -183,7 +197,7 @@ public class Commander extends Overseer {
 		int totalEnemyForces = scout.groundForces() + scout.airForces();
 		Set <ArmyGroup> toRemove = new HashSet<ArmyGroup>();
 		
-		for(ArmyGroup g: marineMedicGroups){
+		for(ArmyGroup g: marineGroups){
 			if(g.getUnits().isEmpty()){
 				toRemove.add(g);
 				continue;
@@ -198,16 +212,17 @@ public class Commander extends Overseer {
 		}
 		
 		for(ArmyGroup g: toRemove){
-			marineMedicGroups.remove(g);
+			marineGroups.remove(g);
 		}
 		
 		if(armyUnits.size()> totalEnemyForces){
-			for(ArmyGroup g: marineMedicGroups){
-				if(!g.isAttacking() && armyUnits.size() >20){
+			for(ArmyGroup g: marineGroups){
+				if(!g.isAttacking() && g.getUnits().size() >10){
 					g.setAttack(true);
 				}
 			}
 		}
+		heal();
 		
 	}
 }

@@ -35,7 +35,7 @@ public class Governor extends Overseer {
 	private final int REBUILD_TIME = 30;
 	private ROUnit naturalBase;
 	private ConvexHull miningArea;
-	private boolean rushDetect = false, cloakDetect = false, airDetect = false;
+	private boolean rushDetect = true, cloakDetect = false, airDetect = false;
 	private boolean rushDealt = false, cloakDealt = false, airDealt = false;
 	private boolean scan = false;
 	public Governor() {
@@ -235,7 +235,7 @@ public class Governor extends Overseer {
 			if(availMinerals>=100){
 				Position choke = attacker.closestChoke(naturalBase);
 				TilePosition chokeTile = new TilePosition(choke.x()*Tools.TILE_SIZE,choke.y()*Tools.TILE_SIZE);
-				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_BUNKER,chokeTile));
+				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_BUNKER,naturalBase.getTilePosition()));
 			}	
 			availMinerals-=100;
 			notDealt = true;

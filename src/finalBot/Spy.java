@@ -63,7 +63,7 @@ public class Spy extends Overseer {
 	
 	// uses scout to find enemy
 	public void findEnemy() {
-		if(!myScout.isStopped())
+		if(!myScout.isIdle())
 			return;
 		for(TilePosition tp : Game.getInstance().getStartLocations()) {
 			if(!scouted.containsKey(tp)) {
@@ -75,7 +75,7 @@ public class Spy extends Overseer {
 	
 	// scouts enemy's nearby potential expansions locations 
 	public void scoutEnemy() {
-		if(!myScout.isStopped())
+		if(!myScout.isIdle())
 			return;
 		for(ROUnit u : enemyUnits) {
 			if(Game.getInstance().self().canSeeUnitAtPosition(u.getType(), u.getLastKnownPosition()) && !u.isVisible() && u.getType().isBuilding()) {

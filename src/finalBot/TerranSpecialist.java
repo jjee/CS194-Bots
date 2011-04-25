@@ -68,7 +68,7 @@ public class TerranSpecialist extends Specialist {
 			myAlert = Alert.AIR_UNITS;
 			airDetected = true;
 			Game.getInstance().printf("WARNING: Air units approaching!");
-		} else if (unit.getType() == UnitType.TERRAN_COMMAND_CENTER && !expanded) {
+		} else if (unit.getType() == UnitType.TERRAN_COMMAND_CENTER && scout.getNumberOf(UnitType.TERRAN_COMMAND_CENTER) == 2 && !expanded) {
 			myAlert = Alert.EXPANSION;
 			expanded = true;
 			Game.getInstance().printf("ALERT: Enemy is expanding!");

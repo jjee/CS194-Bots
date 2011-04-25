@@ -37,6 +37,7 @@ public class Governor extends Overseer {
 	private ConvexHull miningArea;
 	private boolean rushDetect = false, cloakDetect = false, airDetect = false;
 	private boolean rushDealt = false, cloakDealt = false, airDealt = false;
+	private boolean scan = false;
 	public Governor() {
 		builders = new HashMap<ROUnit, UnitType>();
 		allWorkers = new HashSet<ROUnit>();
@@ -534,8 +535,17 @@ public class Governor extends Overseer {
 		}
 	}
 	
+	private void assignScan(){
+		List<ROUnit> comsats = UnitUtils.getAllMy(UnitType.TERRAN_COMSAT_STATION);
+		if(!comsats.isEmpty()&&!scan){
+			scout.assignComSat(UnitUtils.assumeControl(comsats.get(0)));
+			scan= true;
+		}
+	}
+	
 	public void act(){
 		updateTime++;
+		assignScan();
 		if(updateTime>=REBUILD_TIME){
 			updateBuilders();
 			updateTime = 0;

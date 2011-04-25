@@ -25,12 +25,16 @@ public class Spy extends Overseer {
 	private Unit comsat;
 	private TilePosition myHome; 
 	private static final int FRAMES_PER_MIN = 1440;
-	private static final int PIXEL_SCOUT_RANGE = 1000;
+	private static final int PIXEL_SCOUT_RANGE = 2000;
+	private boolean retreat;
+	private boolean looking;
 	
 	public Spy() {
 		scouted = new HashMap<TilePosition,Integer>();
 		enemyUnits = new HashSet<ROUnit>();
 		myHome = Game.getInstance().self().getStartLocation();
+		retreat = false;
+		looking = false;
 	}
 	
 	// grabs SCV from builder for scouting
@@ -62,7 +66,7 @@ public class Spy extends Overseer {
 		if(!myScout.isStopped())
 			return;
 		for(TilePosition tp : Game.getInstance().getStartLocations()) {
-			if(!scouted.containsKey(tp) || scouted.get(tp) < Game.getInstance().getFrameCount()-FRAMES_PER_MIN) {
+			if(!scouted.containsKey(tp)) {
 				scan(tp);
 				return;
 			}
@@ -73,13 +77,24 @@ public class Spy extends Overseer {
 	public void scoutEnemy() {
 		if(!myScout.isStopped())
 			return;
+		for(ROUnit u : enemyUnits) {
+			if(Game.getInstance().self().canSeeUnitAtPosition(u.getType(), u.getLastKnownPosition()) && !u.isVisible() && u.getType().isBuilding()) {
+				myScout.move(u.getLastKnownPosition());
+				enemyUnits.remove(u);
+				return;
+			}
+		}
+		scoutExpansions();
+	}
+	
+	private void scoutExpansions() {
 		List<TilePosition> potentialExpansions = new LinkedList<TilePosition>();
-		for(ROUnit u : Game.getInstance().getGeysers()) {
+		for(ROUnit u : Game.getInstance().getStaticGeysers()) {
 			if(Tools.close((Unit) u, enemyGroundUnits(), PIXEL_SCOUT_RANGE))
 				potentialExpansions.add(u.getLastKnownTilePosition());
 		}
 		for(TilePosition tp : potentialExpansions) {
-			if(!scouted.containsKey(tp) || scouted.get(tp) < Game.getInstance().getFrameCount()-FRAMES_PER_MIN) {
+			if(!scouted.containsKey(tp)) {
 				scan(tp);
 				return;
 			}
@@ -187,41 +202,54 @@ public class Spy extends Overseer {
 	}
 	
 	public void act(){
+		scouted.put(myHome,0);
 		if(myScout==null || !myScout.isVisible()) {
-			if(UnitUtils.getAllMy(UnitType.TERRAN_SCV).size() >= 11){
+			if(UnitUtils.getAllMy(UnitType.TERRAN_SCV).size() >= 11)
 				assignScout(myHome);
+			else
 				return;
-			}
 		}
+		
 		if(myScout==null){
 			//System.out.println("no scout");
 			return;
 		}
-		if(myScout != null && !enemyGroundUnits().isEmpty() && !myScout.getOrder().equals(Order.MOVE)) {
-			//int maxAtkRange = maxGroundRange();
-			int maxAtkRange = 15;
-			if(Tools.close(myScout, enemyGroundUnits(), maxAtkRange)) {
-				if(!myScout.getOrder().equals(Order.PATROL))
-					myScout.patrol(new Position(myHome));
-			}
-			else if(myScout.getOrder().equals(Order.PATROL))
+		
+		if(myScout != null && !attackingGroundUnits().isEmpty()) {
+			int maxAtkRange = maxGroundRange();
+			//int maxAtkRange = 7;
+			if(Tools.close(myScout, attackingGroundUnits(), maxAtkRange)) {
+				if(retreat) return;
+				retreat = true;
+				myScout.move(myHome);
+				return;
+			} else if(retreat) {
+				retreat = false;
 				myScout.stop();
+			}
 		}
 		
 		if(enemyBuildings() <= 0){
+			if(!looking) {
+				looking = true;
+				scouted.clear();
+				scouted.put(myHome,0);
+			}
 			findEnemy();
 			//System.out.println("looking for enemy");
-		}else{
+		}
+		
+		
+		if(myScout.isIdle() || myScout.isStopped()) {
+			looking = false;
 			scoutEnemy();
 			//System.out.println("scouting");
 		}
-		if(myScout.isStopped()) {
+		
+		if(myScout.isIdle() || myScout.isStopped()) {
 			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());
 			if(target!=null)
 				myScout.attack(target);
-			else{
-				
-			}
 		}
 	}
 	
@@ -240,6 +268,16 @@ public class Spy extends Overseer {
 		List<ROUnit> groundUnits = new LinkedList<ROUnit>();
 		for(ROUnit u : enemyUnits) {
 			if(!u.getType().isFlyer())
+				groundUnits.add(u);
+		}
+		return groundUnits;
+	}
+	
+	// list of units on ground, includes both buildings and forces
+	public List<ROUnit> attackingGroundUnits() {
+		List<ROUnit> groundUnits = new LinkedList<ROUnit>();
+		for(ROUnit u : enemyUnits) {
+			if(!u.getType().isFlyer() && u.isAttacking())
 				groundUnits.add(u);
 		}
 		return groundUnits;

@@ -35,7 +35,8 @@ public class Governor extends Overseer {
 	private final int REBUILD_TIME = 30;
 	private ROUnit naturalBase;
 	private ConvexHull miningArea;
-	
+	private boolean rushDetect = false, cloakDetect = false, flightDetect = false;
+	private boolean rushDealt = false, cloakDealt = false, flightDealt = false;
 	public Governor() {
 		builders = new HashMap<ROUnit, UnitType>();
 		allWorkers = new HashSet<ROUnit>();
@@ -141,6 +142,33 @@ public class Governor extends Overseer {
 			//Game.getInstance().printf("Builder count: " + builders.size());
 		return plan;
 	}
+	
+	private void dealRush(List<Pair<UnitType, TilePosition>> plan,
+			int availMinerals, int availGas, int supply, int supplyExpecting, Counter<UnitType> units,
+			Counter<UnitType> futureAssets, Unit center){
+		List<ROUnit> barracks = UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS);
+		boolean freeBarrack = false;
+		for(ROUnit b: barracks){
+			if(b.getTrainingQueue().isEmpty())
+				freeBarrack = true;
+		}
+		boolean notDealt = false;
+		if(freeBarrack&&units.getCount(UnitType.TERRAN_MARINE)<8){
+			plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_MARINE,null));
+			availMinerals-=50;
+			notDealt = true;
+		}
+		if(units.getCount(UnitType.TERRAN_BUNKER)<2){
+			if(availMinerals>=100){
+				Position choke = attacker.closestChoke(naturalBase);
+				TilePosition chokeTile = new TilePosition(choke.x()*Tools.TILE_SIZE,choke.y()*Tools.TILE_SIZE);
+				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_BUNKER,chokeTile));
+			}	
+			availMinerals-=100;
+			notDealt = true;
+		}
+		if(!notDealt) rushDealt = true;
+	}
 
 	private void earlyBuild(List<Pair<UnitType, TilePosition>> plan,
 			int availMinerals, int availGas, int supply, int supplyExpecting, Counter<UnitType> units,
@@ -175,6 +203,8 @@ public class Governor extends Overseer {
 			if(availMinerals >= 150)
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_BARRACKS,center.getTilePosition()));
 			availMinerals -=150;
+		} else if(rushDetect && !rushDealt){
+			dealRush(plan, availMinerals, availGas, supply, supplyExpecting, units, futureAssets, center);
 		} else if(units.getCount(UnitType.TERRAN_REFINERY) + futureAssets.getCount(UnitType.TERRAN_REFINERY) < 1){
 			if(availMinerals >= 100) 
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_REFINERY,center.getTilePosition()));
@@ -197,9 +227,16 @@ public class Governor extends Overseer {
 				availMinerals-=150;
 				availGas-=150;
 			}
+		} else if(academy!=null&&futureAssets.getCount(UnitType.TERRAN_COMSAT_STATION)+futureAssets.getCount(UnitType.TERRAN_COMSAT_STATION)<1){
+			if(availMinerals>=50&&availGas>=50)
+				UnitUtils.assumeControl(center).buildAddon(UnitType.TERRAN_COMSAT_STATION);
 		}
 		
-		if(availMinerals >=100&& supply + supplyExpecting < 4 + 2*units.getCount(UnitType.TERRAN_BARRACKS)){
+		if(specialist.getAlert()==Alert.EARLY_RUSH){
+			rushDetect = true;
+		}
+		
+		if(availMinerals >=100&& supply + supplyExpecting < 4 + 2*(1+units.getCount(UnitType.TERRAN_BARRACKS))){
 			plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_SUPPLY_DEPOT,center.getTilePosition()));
 			availMinerals-=100;
 		}
@@ -236,6 +273,8 @@ public class Governor extends Overseer {
 				}
 			}
 		}
+		
+		
 	}
 	
 	public void executePlan() {
@@ -334,7 +373,7 @@ public class Governor extends Overseer {
 		int numIterations = 30;
 		Random rand = new Random();
 		for (int tryDist = 0; tryDist < 30; tryDist++){
-			int buildDistance = (int) (Math.random()*25+5);
+			int buildDistance = (int) (Math.random()*20+5);
 			for (int i = 0; i < numIterations; i++) {
 				int x = rand.nextInt(2*buildDistance)-buildDistance;
 				int y = rand.nextInt(2*buildDistance)-buildDistance;
@@ -436,5 +475,9 @@ public class Governor extends Overseer {
 	
 	public GameStage getGameStage() {
 		return gamestage;
+	}
+	
+	public ROUnit getHome(){
+		return naturalBase;
 	}
 }

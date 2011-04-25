@@ -125,6 +125,10 @@ public class Spy extends Overseer {
 		return count;
 	}
 	
+	public Set<ROUnit> getEnemyUnits(){
+		return enemyUnits;
+	}
+	
 	// enemy armed air unit count
 	public int airForces() {
 		int airUnits = 0;
@@ -223,6 +227,7 @@ public class Spy extends Overseer {
 				
 			}
 		}
+		updateEnemyUnits();
 	}
 	
 	// enemy building count

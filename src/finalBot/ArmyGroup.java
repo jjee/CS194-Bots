@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.bwapi.proxy.model.Color;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
@@ -12,10 +13,13 @@ import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
 import org.bwapi.proxy.model.UnitType;
 
+import edu.berkeley.nlp.starcraft.util.UnitUtils;
+
 public class ArmyGroup {
 	private Set<Unit> units;
 	private boolean attacking;
 	private Position rallyPoint;
+	private boolean gathering = false;
 	
 	public ArmyGroup(){
 		units = new HashSet<Unit>();
@@ -25,7 +29,14 @@ public class ArmyGroup {
 	public void setRally(Position p){ rallyPoint = p; }
 	public Position getRally(){ return rallyPoint; }
 	
-	public Set<Unit> getUnits(){ return units; }
+	public Set<Unit> getUnits(){ 
+		Set<Unit> retUnits = new HashSet<Unit>();
+		for(Unit u: units){
+			if(u.isCompleted())
+				retUnits.add(u);
+		}
+		return units; 
+	}
 	/**
 	 * 
 	 * @param type
@@ -62,13 +73,18 @@ public class ArmyGroup {
 				return true;
 			}
 		}
+		for(ROUnit u : units){
+			if(u.getTarget()!=null){
+				return true;
+			}
+		}
 		return false;
 	}
 	
 	public void rally(){
 		if(rallyPoint==null) return;
 		for(Unit u: units){
-			if(u.isIdle() && u.getPosition().getDistance(rallyPoint) > 500);
+			if(u.isIdle() && u.getPosition().getDistance(rallyPoint) > 300)
 				u.rightClick(rallyPoint);
 		}
 	}
@@ -99,4 +115,21 @@ public class ArmyGroup {
 			return Tools.findClosest(attackingUnits, getLocation());
 		}
 	}
+	
+	public boolean gather(){
+		boolean retVal = true;
+		if(UnitUtils.groupRadius(units) > 150){
+			if(units.isEmpty()) return false;
+			for(Unit u: units){
+				if(u.getTilePosition().getDistance(getLocation()) > 3){
+					u.rightClick(getLocation());
+					retVal = false;
+				}
+			}
+		}
+		gathering = !retVal;
+		return retVal;
+	}
+	
+	public boolean isGathering(){ return gathering; }
 }

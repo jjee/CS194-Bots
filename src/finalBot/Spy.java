@@ -250,7 +250,7 @@ public class Spy extends Overseer {
 			//System.out.println("scouting");
 		}
 		
-		if(myScout.isIdle() || myScout.isStopped()) {
+		if((myScout.isIdle() || myScout.isStopped()) && !enemyBases().isEmpty()) {
 			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());
 			if(target!=null)
 				myScout.attack(target);

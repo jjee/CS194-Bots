@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bwapi.proxy.model.Game;
-import org.bwapi.proxy.model.Order;
-import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
@@ -19,22 +17,21 @@ import org.bwapi.proxy.model.WeaponType;
 import edu.berkeley.nlp.starcraft.util.UnitUtils;
 
 public class Spy extends Overseer {
-	private Map<TilePosition,Integer> scouted; //maps areas scouted to time scouted?
+	private Set<TilePosition> scouted; //maps areas scouted to time scouted?
 	private Set<ROUnit> enemyUnits;
 	private Unit myScout;
 	private Unit comsat;
 	private TilePosition myHome; 
-	private static final int FRAMES_PER_MIN = 1440;
 	private static final int PIXEL_SCOUT_RANGE = 2000;
 	private boolean retreat;
-	private boolean looking;
+	private boolean firstScout;
 	
 	public Spy() {
-		scouted = new HashMap<TilePosition,Integer>();
+		scouted = new HashSet<TilePosition>();
 		enemyUnits = new HashSet<ROUnit>();
 		myHome = Game.getInstance().self().getStartLocation();
 		retreat = false;
-		looking = false;
+		firstScout = true;
 	}
 	
 	// grabs SCV from builder for scouting
@@ -55,7 +52,7 @@ public class Spy extends Overseer {
 		if(myScout == null)
 			assignScout(tp);
 		if(Tools.close((ROUnit) myScout, tp, myScout.getType().sightRange()/32)) {
-			scouted.put(tp, Game.getInstance().getFrameCount());
+			scouted.add(tp);
 			return;
 		}
 		myScout.move(tp);
@@ -66,7 +63,7 @@ public class Spy extends Overseer {
 		if(!myScout.isIdle())
 			return;
 		for(TilePosition tp : Game.getInstance().getStartLocations()) {
-			if(!scouted.containsKey(tp)) {
+			if(!scouted.contains(tp)) {
 				scan(tp);
 				return;
 			}
@@ -94,7 +91,7 @@ public class Spy extends Overseer {
 				potentialExpansions.add(u.getLastKnownTilePosition());
 		}
 		for(TilePosition tp : potentialExpansions) {
-			if(!scouted.containsKey(tp)) {
+			if(!scouted.contains(tp)) {
 				scan(tp);
 				return;
 			}
@@ -206,22 +203,27 @@ public class Spy extends Overseer {
 	}
 	
 	public void act(){
-		scouted.put(myHome,0);
+		scouted.add(myHome);
+		
+		// grab new scout if scout died or have no scout
 		if(myScout==null || !myScout.isVisible()) {
+			// only get scout if have enough scv's
 			if(UnitUtils.getAllMy(UnitType.TERRAN_SCV).size() >= 11)
 				assignScout(myHome);
 			else
 				return;
 		}
 		
+		
+		// no scout received from assign
 		if(myScout==null){
-			//System.out.println("no scout");
 			return;
 		}
 		
+		
+		// retreat if there are attacking ground units
 		if(!attackingGroundUnits().isEmpty()) {
-			int maxAtkRange = maxGroundRange();
-			//int maxAtkRange = 7;
+			int maxAtkRange = maxAttackingGroundRange();
 			if(Tools.close(myScout, attackingGroundUnits(), maxAtkRange)) {
 				if(retreat) return;
 				retreat = true;
@@ -234,19 +236,18 @@ public class Spy extends Overseer {
 			}
 		}
 		
-		if(enemyBuildings() <= 0){
-			if(!looking) {
-				looking = true;
-				scouted.clear();
-				scouted.put(myHome,0);
-			}
+		// stop start location scouting if buildings found
+		if(enemyBuildings() > 0)
+			firstScout = false;
+		
+		// find enemy start location
+		if(firstScout)
 			findEnemy();
-			//System.out.println("looking for enemy");
-		} else if(myScout.isIdle() || myScout.isStopped()) {
-			looking = false;
+		// enemy found, scout nearby expansions and units
+		else if(myScout.isIdle() || myScout.isStopped())
 			scoutEnemy();
-			//System.out.println("scouting");
-		} else if((myScout.isIdle() || myScout.isStopped()) && !enemyBases().isEmpty()) {
+		// done scouting, should try attacking if nothing to do
+		else if((myScout.isIdle() || myScout.isStopped()) && !enemyBases().isEmpty()) {
 			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());
 			if(target!=null)
 				myScout.attack(target);
@@ -288,6 +289,18 @@ public class Spy extends Overseer {
 	public int maxGroundRange() {
 		int maxAtkRange = 15;
 		for(ROUnit u : enemyGroundUnits()) {
+			WeaponType ground_weapon = u.getType().groundWeapon();
+			if(ground_weapon == null)
+				continue;
+			maxAtkRange = Math.max(maxAtkRange, ground_weapon.maxRange());
+		}
+		return maxAtkRange;
+	}
+
+	// max atk range of attacking ground units
+	public int maxAttackingGroundRange() {
+		int maxAtkRange = 15;
+		for(ROUnit u : attackingGroundUnits()) {
 			WeaponType ground_weapon = u.getType().groundWeapon();
 			if(ground_weapon == null)
 				continue;

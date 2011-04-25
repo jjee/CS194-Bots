@@ -229,7 +229,7 @@ public class Spy extends Overseer {
 		}
 		
 		noFuture = true;
-		
+		/*
 		// retreat if there are attacking ground units
 		if(!attackingGroundUnits().isEmpty()) {
 			int maxAtkRange = maxAttackingGroundRange();
@@ -244,7 +244,7 @@ public class Spy extends Overseer {
 				return;
 			}
 		}
-		
+		*/
 		// stop start location scouting if buildings found
 		if(enemyBuildings() > 0)
 			firstScout = false;
@@ -252,10 +252,12 @@ public class Spy extends Overseer {
 		// find enemy start location
 		if(firstScout)
 			findEnemy();
+		/*
 		// enemy found, scout nearby expansions and units
 		else if(myScout.isIdle() || myScout.isStopped())
 			scoutEnemy();
-		// done scouting, should try attacking if nothing to do
+		*/
+		// done scouting, should try moving to enemy base if nothing to do
 		else if((myScout.isIdle() || myScout.isStopped()) && !enemyBases().isEmpty()) {
 			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());
 			if(target!=null)

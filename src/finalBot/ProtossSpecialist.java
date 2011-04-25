@@ -65,7 +65,7 @@ public class ProtossSpecialist extends Specialist {
 			myAlert = Alert.AIR_UNITS;
 			airDetected = true;
 			Game.getInstance().printf("WARNING: Air units approaching!");
-		} else if (unit.getType() == UnitType.PROTOSS_NEXUS && !expanded) {
+		} else if (unit.getType() == UnitType.PROTOSS_NEXUS && scout.getNumberOf(UnitType.PROTOSS_NEXUS) == 2 && !expanded) {
 			myAlert = Alert.EXPANSION;
 			expanded = true;
 			Game.getInstance().printf("ALERT: Enemy is expanding!");

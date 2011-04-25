@@ -225,7 +225,10 @@ public class Governor extends Overseer {
 		boolean notDealt = false;
 		if(freeBarrack&&units.getCount(UnitType.TERRAN_MARINE)+futureAssets.getCount(UnitType.TERRAN_MARINE)<8){
 			plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_MARINE,null));
-			availMinerals-=50;
+			if(availMinerals>=50 && supply>1){
+				availMinerals-=50;
+				supply-=2;
+			}
 			notDealt = true;
 		}
 		if(units.getCount(UnitType.TERRAN_BUNKER)+futureAssets.getCount(UnitType.TERRAN_BUNKER)<2){

@@ -101,7 +101,7 @@ public class Governor extends Overseer {
 		//upgrades
 		boolean hasStim = me.hasResearched(TechType.STIM_PACKS);
 		boolean hasRange = me.getUpgradeLevel(UpgradeType.U_238_SHELLS) == 1;
-		
+		detect();
 		Counter<UnitType> futureAssets = new Counter<UnitType>();
 		for(ROUnit u: builders.keySet()){
 			UnitType willHave = builders.get(u);
@@ -154,9 +154,24 @@ public class Governor extends Overseer {
 	private void midBuild(List<Pair<UnitType, TilePosition>> plan,
 			int availMinerals, int availGas, int supply, int supplyExpecting, Counter<UnitType> units,
 			Counter<UnitType> futureAssets, Unit center) {
+		int turretNec = 3;
+		if(airDetect&&cloakDetect){
+			turretNec*=2;
+		}
 		if(airDetect && !airDealt){
-			if(availMinerals >= 75 && 5 < units.getCount(UnitType.TERRAN_MISSILE_TURRET) + units.getCount(UnitType.TERRAN_MISSILE_TURRET)){
-				
+			if(availMinerals >= 75 && turretNec < units.getCount(UnitType.TERRAN_MISSILE_TURRET) + units.getCount(UnitType.TERRAN_MISSILE_TURRET)){
+				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_MISSILE_TURRET,center.getTilePosition()));
+			 } else if (availMinerals < 75) {
+					airDealt = true;
+			}
+		}
+		if(cloakDetect && !cloakDealt){
+			if(availMinerals >= 75 && turretNec < units.getCount(UnitType.TERRAN_MISSILE_TURRET) + units.getCount(UnitType.TERRAN_MISSILE_TURRET)){
+				Position p = attacker.closestChoke(naturalBase);
+				TilePosition tp = new TilePosition(p.x()*Tools.TILE_SIZE,p.y()*Tools.TILE_SIZE);
+				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_MISSILE_TURRET,tp));
+			} else if (availMinerals < 75) {
+				cloakDealt = true;
 			}
 		}
 		if(availMinerals >=100&& supply + supplyExpecting < 2 + 2*(1+units.getCount(UnitType.TERRAN_BARRACKS))){
@@ -164,7 +179,35 @@ public class Governor extends Overseer {
 			availMinerals-=100;
 		}
 		
+		boolean hasAcad = !UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).isEmpty();
+		List<ROUnit> barracks = UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS);
+		List<ROUnit> marines = UnitUtils.getAllMy(UnitType.TERRAN_MARINE);
+		int marineCount = marines.size();
+		List<ROUnit> medics = UnitUtils.getAllMy(UnitType.TERRAN_MEDIC);
+		int medicCount = medics.size();
+		for(ROUnit b: barracks){
+			if(b.isCompleted()&&b.getTrainingQueue().isEmpty()){
+				if(marineCount > medicCount*4 && hasAcad) {
+					if(availMinerals >= 50 && supply > 1 && availGas >= 25){
+						plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_MEDIC,null));
+						medicCount++;
+					}
+					availMinerals-=50;
+					availGas-=25;
+					supply-=2;
+				} else if(availMinerals >= 50 && supply > 1){
+					plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_MARINE,null));
+					availMinerals-=50;
+					supply-=2;
+				}
+			}
+		}
 		
+		if(units.getCount(UnitType.TERRAN_BARRACKS) + futureAssets.getCount(UnitType.TERRAN_BARRACKS) < 6){
+			if(availMinerals >= 150)
+				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_BARRACKS,center.getTilePosition()));
+			availMinerals -=150;
+		} 
 	}
 	
 	private void dealRush(List<Pair<UnitType, TilePosition>> plan,
@@ -305,6 +348,7 @@ public class Governor extends Overseer {
 	
 	public void executePlan() {
 		List<Pair<UnitType, TilePosition>> plan = plan();
+		if(plan==null) return;
 		for(Pair<UnitType,TilePosition> p: plan){
 			UnitType t = p.getFirst();
 			TilePosition approx = p.getSecond();

@@ -124,11 +124,27 @@ public class Commander extends Overseer {
 				
 			}
 		}
+		Set<Unit> changeGroups = new HashSet<Unit>();
 		for(Unit c: medics){
-			if(c.isIdle()&&!g.underAttack()){
+			if(marines.size()==0){
+				changeGroups.add(c);
+			}else if(c.isIdle()&&!g.underAttack()){
 				if(UnitUtils.avePos(marines)!=null)
 					c.rightClick(UnitUtils.avePos(marines));
 			}
+		}
+		
+		for(Unit c: changeGroups){
+			ArmyGroup choice = null;
+			for(ArmyGroup changeG: marineMedicGroups){
+				choice = changeG;
+			}
+			if(changeGroups==null){
+				c.rightClick(builder.getHome());
+				choice = new ArmyGroup();
+			}
+			g.remove(c);
+			choice.add(c);
 		}
 	}
 	

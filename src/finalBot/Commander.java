@@ -98,7 +98,7 @@ public class Commander extends Overseer {
 		g.setRally(pos);
 		if(!g.underAttack() && g.getLocation().getDistance(pos) < 30){
 			if(!g.gather()) return;
-			System.out.println("gathering");
+//			System.out.println("gathering");
 		}
 		Set<Unit> marines = g.getUnits(UnitType.TERRAN_MARINE);
 		Set<Unit> medics = g.getUnits(UnitType.TERRAN_MEDIC);

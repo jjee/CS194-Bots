@@ -29,7 +29,8 @@ public class ProtossSpecialist extends Specialist {
 			myState = State.NONE;
 			myAlert = Alert.NONE;
 		}
-		else return;
+		if (myAlert == Alert.NONE)
+			return;
 		
 		//TODO: Formula for calculating defense depth
 		int totalAttackPotential = 0;

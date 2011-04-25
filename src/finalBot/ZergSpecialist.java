@@ -20,7 +20,8 @@ public class ZergSpecialist extends Specialist {
 		if (Game.getInstance().getFrameCount() - lastFrameObserved > LATENCY) {
 			myAlert = Alert.NONE;
 		} 
-		else return;
+		if (myAlert == Alert.NONE)
+			return;
 		
 		//TODO: Formula for calculating defense depth
 		int totalAttackPotential = 0;

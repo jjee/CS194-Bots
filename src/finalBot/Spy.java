@@ -232,16 +232,17 @@ public class Spy extends Overseer {
 		
 		// retreat if there are attacking ground units
 		if(!attackingGroundUnits().isEmpty()) {
-			int maxAtkRange = maxAttackingGroundRange();
-			if(Tools.close(myScout, attackingGroundUnits(), maxAtkRange)) {
-				if(retreat) return;
-				retreat = true;
-				myScout.move(myHome);
-				return;
-			} else if(retreat) {
-				retreat = false;
-				myScout.stop();
-				return;
+			for(ROUnit u : attackingGroundUnits()) {
+				if(myScout.equals(u.getTarget()) || myScout.equals(u.getOrderTarget())) {
+					if(retreat) return;
+					retreat = true;
+					myScout.move(myHome);
+					return;
+				} else if(retreat) {
+					retreat = false;
+					myScout.stop();
+					return;
+				}
 			}
 		}
 		

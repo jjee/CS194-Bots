@@ -243,23 +243,22 @@ public class Spy extends Overseer {
 		}
 		
 		noFuture = true;
-		
+		/*
 		// retreat if there are attacking ground units
 		if(!attackingGroundUnits().isEmpty()) {
-			for(ROUnit u : attackingGroundUnits()) {
-				if(myScout.equals(u.getTarget()) || myScout.equals(u.getOrderTarget())) {
-					if(retreat) return;
-					retreat = true;
-					myScout.move(myHome);
-					return;
-				} else if(retreat) {
-					retreat = false;
-					myScout.stop();
-					return;
-				}
+			int maxAtkRange = maxAttackingGroundRange();
+			if(Tools.close(myScout, attackingGroundUnits(), maxAtkRange)) {
+				if(retreat) return;
+				retreat = true;
+				myScout.move(myHome);
+				return;
+			} else if(retreat) {
+				retreat = false;
+				myScout.stop();
+				return;
 			}
 		}
-		
+		*/
 		// stop start location scouting if buildings found
 		if(enemyBuildings() > 0)
 			firstScout = false;

@@ -199,8 +199,9 @@ public class Commander extends Overseer {
 		if(getArmySize()<1){
 			if(enemies!=null){
 				for(ROUnit u:enemies){
-					if(u.getOrderTarget()!=null && u.getOrderTarget().getPlayer().equals(me)
-							&& u.getOrderTarget().isGatheringMinerals()){
+					if(u.getOrderTarget()!=null && u.getOrderTarget().getPlayer()!=null && 
+							u.getOrderTarget().getPlayer().equals(me) &&
+							u.getOrderTarget().isGatheringMinerals()){
 						rushingEnemies++;
 						Unit toAdd = builder.pullWorker(u.getTilePosition());
 						if(toAdd!=null)

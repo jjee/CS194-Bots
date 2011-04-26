@@ -195,7 +195,7 @@ public class Governor extends Overseer {
 		int medicCount = medics.size();
 		for(ROUnit b: barracks){
 			if(b.isCompleted()&&b.getTrainingQueue().isEmpty()){
-				if(marineCount > medicCount*4 && hasAcad) {
+				if(marineCount > medicCount*4 && hasAcad && !gasSteal) {
 					if(availMinerals >= 50 && supply > 1 && availGas >= 25){
 						plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_MEDIC,null));
 						medicCount++;
@@ -204,11 +204,11 @@ public class Governor extends Overseer {
 					availMinerals-=50;
 					availGas-=25;
 					supply-=2;
-				} else if (firebats.size() > marineCount*2){
+				} else if (firebats.size() < marineCount/2 && !gasSteal && hasAcad){
 					if(availMinerals >= 50 && supply >= 4 && availGas>=25){
 						plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_FIREBAT,null));
 						availMinerals-=50;
-						supply-=2;
+						supply-=4;
 						return;
 					}
 				} else if(availMinerals >= 50 && supply > 1){
@@ -333,7 +333,7 @@ public class Governor extends Overseer {
 			}
 		}
 		
-		if((hasStim&&(hasAtt||ebay.isUpgrading())&&(hasRange||academy.isUpgrading())) || gasSteal){
+		if(ebay!=null&&academy!=null&&(hasStim&&(hasAtt||ebay.isUpgrading())&&(hasRange||academy.isUpgrading())) || gasSteal){
 			gamestage = GameStage.MID;
 		}
 		
@@ -369,7 +369,7 @@ public class Governor extends Overseer {
 					availMinerals-=50;
 					availGas-=25;
 					supply-=2;
-				} else if (firebats.size() > marineCount*2){
+				} else if (firebats.size() < marineCount/2 && academy!=null && academy.isCompleted() && !gasSteal){
 					if(availMinerals >= 50 && supply >= 4 && availGas>=25){
 						plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_FIREBAT,null));
 						availMinerals-=50;

@@ -297,11 +297,11 @@ public class Governor extends Overseer {
 			availMinerals -=150;
 		} else if(rushDetect && !rushDealt){
 			dealRush(plan, availMinerals, availGas, supply, supplyExpecting, units, futureAssets, center);
-		} else if(units.getCount(UnitType.TERRAN_REFINERY) + futureAssets.getCount(UnitType.TERRAN_REFINERY) < 1){
+		} else if(units.getCount(UnitType.TERRAN_MARINE)>10&&units.getCount(UnitType.TERRAN_REFINERY) + futureAssets.getCount(UnitType.TERRAN_REFINERY) < 1){
 			if(availMinerals >= 100) 
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_REFINERY,center.getTilePosition()));
 			availMinerals -=50;
-		} else if(units.getCount(UnitType.TERRAN_ACADEMY) +futureAssets.getCount(UnitType.TERRAN_ACADEMY) < 1){
+		} else if(units.getCount(UnitType.TERRAN_MARINE)>10&&units.getCount(UnitType.TERRAN_ACADEMY) +futureAssets.getCount(UnitType.TERRAN_ACADEMY) < 1){
 			if(availMinerals >= 150)
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_ACADEMY,center.getTilePosition()));
 			availMinerals-=150;
@@ -312,7 +312,7 @@ public class Governor extends Overseer {
 				availMinerals-=150;
 				availGas-=150;
 			}
-		} else if(units.getCount(UnitType.TERRAN_ENGINEERING_BAY) +futureAssets.getCount(UnitType.TERRAN_ENGINEERING_BAY) < 1){
+		} else if(units.getCount(UnitType.TERRAN_MARINE)>10&&units.getCount(UnitType.TERRAN_ENGINEERING_BAY) +futureAssets.getCount(UnitType.TERRAN_ENGINEERING_BAY) < 1){
 			if(availMinerals >= 125)
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_ENGINEERING_BAY,center.getTilePosition()));
 			availMinerals-=125;

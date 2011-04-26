@@ -189,6 +189,7 @@ public class Governor extends Overseer {
 		boolean hasAcad = !UnitUtils.getAllMy(UnitType.TERRAN_ACADEMY).isEmpty();
 		List<ROUnit> barracks = UnitUtils.getAllMy(UnitType.TERRAN_BARRACKS);
 		List<ROUnit> marines = UnitUtils.getAllMy(UnitType.TERRAN_MARINE);
+		List<ROUnit> firebats = UnitUtils.getAllMy(UnitType.TERRAN_FIREBAT);
 		int marineCount = marines.size();
 		List<ROUnit> medics = UnitUtils.getAllMy(UnitType.TERRAN_MEDIC);
 		int medicCount = medics.size();
@@ -203,6 +204,13 @@ public class Governor extends Overseer {
 					availMinerals-=50;
 					availGas-=25;
 					supply-=2;
+				} else if (firebats.size() > marineCount*2){
+					if(availMinerals >= 50 && supply >= 4 && availGas>=25){
+						plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_FIREBAT,null));
+						availMinerals-=50;
+						supply-=2;
+						return;
+					}
 				} else if(availMinerals >= 50 && supply > 1){
 					plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_MARINE,null));
 					availMinerals-=50;
@@ -349,6 +357,7 @@ public class Governor extends Overseer {
 		int marineCount = marines.size();
 		List<ROUnit> medics = UnitUtils.getAllMy(UnitType.TERRAN_MEDIC);
 		int medicCount = medics.size();
+		List<ROUnit> firebats = UnitUtils.getAllMy(UnitType.TERRAN_FIREBAT);
 		for(ROUnit b: barracks){
 			if(b.isCompleted()&&b.getTrainingQueue().isEmpty()){
 				if(marineCount > medicCount*4 && academy!=null && academy.isCompleted()) {
@@ -360,6 +369,13 @@ public class Governor extends Overseer {
 					availMinerals-=50;
 					availGas-=25;
 					supply-=2;
+				} else if (firebats.size() > marineCount*2){
+					if(availMinerals >= 50 && supply >= 4 && availGas>=25){
+						plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_FIREBAT,null));
+						availMinerals-=50;
+						supply-=2;
+						return;
+					}
 				} else if(availMinerals >= 50 && supply > 1){
 					plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_MARINE,null));
 					availMinerals-=50;
@@ -470,18 +486,21 @@ public class Governor extends Overseer {
 	}
 	
 	private TilePosition selectBuildLoc(UnitType unit, TilePosition approx, Unit builder){
+		int startDist = 20;
 		if(unit == UnitType.TERRAN_REFINERY){
 			Set<ROUnit> geysers = (Set<ROUnit>) Game.getInstance().getStaticGeysers();
 			return UnitUtils.getClosest(builder.getPosition(), geysers).getTilePosition();
 		}
-		if(unit == UnitType.TERRAN_BUNKER){
+		/*if(unit == UnitType.TERRAN_BUNKER){
 			Position choke = attacker.closestChoke(naturalBase);
 			approx = new TilePosition(choke.x()*Tools.TILE_SIZE,choke.y()*Tools.TILE_SIZE);
-		}
+			startDist = 0;
+		}*/
 		int numIterations = 30;
+		
 		Random rand = new Random();
 		for (int tryDist = 0; tryDist < 30; tryDist++){
-			int buildDistance = (int) (Math.random()*tryDist+5);
+			int buildDistance = (int) (Math.random()*(tryDist+startDist)+5);
 			for (int i = 0; i < numIterations; i++) {
 				int x = rand.nextInt(2*buildDistance)-buildDistance;
 				int y = rand.nextInt(2*buildDistance)-buildDistance;

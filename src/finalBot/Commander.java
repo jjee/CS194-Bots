@@ -55,7 +55,7 @@ public class Commander extends Overseer {
 		
 		//add to some group
 		UnitType type = u.getType();
-		if(type==UnitType.TERRAN_MARINE){
+		if(type==UnitType.TERRAN_MARINE || type==UnitType.TERRAN_FIREBAT){
 			ArmyGroup choice = null;
 			
 			for(ArmyGroup g: marineGroups){
@@ -112,18 +112,15 @@ public class Commander extends Overseer {
 		}
 		
 		Set<Unit> marines = g.getUnits(UnitType.TERRAN_MARINE);
-		ROUnit target = g.selectTarget();
+		Set<Unit> firebats = g.getUnits(UnitType.TERRAN_FIREBAT);
+		
 		for(Unit m: marines){
 			if(m.isIdle())
 				m.attackMove(pos);
-			
-			if(target!=null && target.isVisible() &&
-					Tools.close(m.getTilePosition(),target.getLastKnownTilePosition(),6) && m.getHitPoints() > 30 &&
-				Game.getInstance().self().hasResearched(TechType.STIM_PACKS) &&
-				m.getStimTimer()==0){
-				m.useTech(TechType.STIM_PACKS);
-				
-			}
+		}
+		for(Unit f: firebats){
+			if(f.isIdle())
+				f.attackMove(pos);
 		}
 	}
 	
@@ -140,7 +137,7 @@ public class Commander extends Overseer {
 			}
 			if(5 < c.getTilePosition().getDistance(medics.get(c).getTilePosition())){
 				c.rightClick(medics.get(c).getTilePosition());
-				System.out.println(medics.get(c).getTilePosition());
+				//System.out.println(medics.get(c).getTilePosition());
 			}
 		}
 	}
@@ -200,13 +197,15 @@ public class Commander extends Overseer {
 		int rushingEnemies = 0;
 		List<ROUnit> enemies =Tools.enemyUnits();
 		if(getArmySize()<1){
-			for(ROUnit u:enemies){
-				if(u.getOrderTarget()!=null && u.getOrderTarget().getPlayer().equals(me)
-						&& u.getOrderTarget().isGatheringMinerals()){
-					rushingEnemies++;
-					Unit toAdd = builder.pullWorker(u.getTilePosition());
-					if(toAdd!=null)
-						peasants.add(toAdd);
+			if(enemies!=null){
+				for(ROUnit u:enemies){
+					if(u.getOrderTarget()!=null && u.getOrderTarget().getPlayer().equals(me)
+							&& u.getOrderTarget().isGatheringMinerals()){
+						rushingEnemies++;
+						Unit toAdd = builder.pullWorker(u.getTilePosition());
+						if(toAdd!=null)
+							peasants.add(toAdd);
+					}
 				}
 			}
 		}

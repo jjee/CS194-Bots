@@ -291,7 +291,7 @@ public class Governor extends Overseer {
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_SCV,null));
 			supply-=2;
 			availMinerals-=50;
-		} else if(units.getCount(UnitType.TERRAN_BARRACKS) + futureAssets.getCount(UnitType.TERRAN_BARRACKS) < 2){
+		} else if(units.getCount(UnitType.TERRAN_BARRACKS) + futureAssets.getCount(UnitType.TERRAN_BARRACKS) < 3){
 			if(availMinerals >= 150)
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_BARRACKS,center.getTilePosition()));
 			availMinerals -=150;

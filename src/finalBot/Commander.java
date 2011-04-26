@@ -272,12 +272,11 @@ public class Commander extends Overseer {
 			marineGroups.remove(g);
 		}
 		
-		if(getArmySize()> totalEnemyForces){
-			for(ArmyGroup g: marineGroups){
-				if(!g.isAttacking() && g.getUnits().size() >20){
-					g.setAttack(true);
-				}
+		for(ArmyGroup g: marineGroups){
+			if(!g.isAttacking() && g.getUnits().size() >20){
+				g.setAttack(true);
 			}
+			
 		}
 		heal();
 		

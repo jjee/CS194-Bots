@@ -8,6 +8,7 @@ public abstract class Specialist extends Overseer {
 	protected boolean rushDetected;
 	protected boolean cloakingDetected;
 	protected boolean airDetected;
+	protected boolean noDefense;
 	
 	//TODO: Figure out how long LATENCY should be
 	protected final static int LATENCY = 10000;

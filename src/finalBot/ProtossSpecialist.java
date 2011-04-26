@@ -7,7 +7,6 @@ import org.bwapi.proxy.model.UnitType;
 public class ProtossSpecialist extends Specialist {
 	private State myState;
 	private boolean expanded;
-	private boolean noDefense = true;
 	
 	private enum State {
 		NONE,
@@ -22,6 +21,7 @@ public class ProtossSpecialist extends Specialist {
 		airDetected = false;
 		cloakingDetected = false;
 		expanded = false;
+		noDefense = false;
 	}
 	
 	@Override

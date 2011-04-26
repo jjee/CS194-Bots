@@ -144,6 +144,15 @@ public class Spy extends Overseer {
 		return enemyUnits;
 	}
 	
+	public ROUnit getCloakedUnit(){
+		List<ROUnit> enemies = Tools.enemyUnits();
+		for(ROUnit e: enemies){
+			if(e.isCloaked())
+				return e;
+		}
+		return null;
+	}
+	
 	// enemy armed air unit count
 	public int airForces() {
 		int airUnits = 0;
@@ -209,8 +218,13 @@ public class Spy extends Overseer {
 		scouted.add(myHome);
 		updateEnemyUnits();
 		if(comsat != null) {
-			if(enemyBuildings() > 0 && comsat.getEnergy() >= 50)
-				comsat.useTech(TechType.SCANNER_SWEEP,randomEnemyBuilding().getLastKnownPosition());
+			if(comsat.getEnergy() >= 50){
+				ROUnit target = randomEnemyBuilding();
+				ROUnit cloaked = getCloakedUnit();
+				if(cloaked!=null) target = cloaked;
+				if(target!=null)
+					comsat.useTech(TechType.SCANNER_SWEEP,target.getLastKnownPosition());
+			}
 		}
 		
 		// grab new scout if scout died or have no scout

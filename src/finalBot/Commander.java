@@ -11,6 +11,7 @@ import org.bwapi.proxy.model.Bwta;
 import org.bwapi.proxy.model.Chokepoint;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Order;
+import org.bwapi.proxy.model.Player;
 import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TechType;
@@ -24,13 +25,17 @@ public class Commander extends Overseer {
 	private Set<Unit> armyUnits; //all units under attacker control
 	private List<ArmyGroup> marineGroups;
 	private Map<Unit,Unit> medics;
+	private Set<Unit> peasants;
 	private int attackCount; //number of times we tried to attack
+	private Player me;
 	
 	public Commander(){
 		armyUnits = new HashSet<Unit>();
 		marineGroups = new ArrayList<ArmyGroup>();
+		peasants = new HashSet<Unit>();
 		medics = new HashMap<Unit,Unit>();
 		attackCount = 0;
+		me = Game.getInstance().self();
 	}
 	
 	public boolean useBunkers(Unit u){
@@ -135,6 +140,7 @@ public class Commander extends Overseer {
 			}
 			if(5 < c.getTilePosition().getDistance(medics.get(c).getTilePosition())){
 				c.rightClick(medics.get(c).getTilePosition());
+				System.out.println(medics.get(c).getTilePosition());
 			}
 		}
 	}
@@ -190,11 +196,49 @@ public class Commander extends Overseer {
 		}
 		
 	}
+	public void peasantRush(){
+		int rushingEnemies = 0;
+		List<ROUnit> enemies =Tools.enemyUnits();
+		if(getArmySize()<1){
+			for(ROUnit u:enemies){
+				if(u.getOrderTarget()!=null && u.getOrderTarget().getPlayer().equals(me)
+						&& u.getOrderTarget().isGatheringMinerals()){
+					rushingEnemies++;
+					Unit toAdd = builder.pullWorker(u.getTilePosition());
+					if(toAdd!=null)
+						peasants.add(toAdd);
+				}
+			}
+		}
+		if(rushingEnemies == 0){
+			for(Unit p : peasants){
+				builder.addWorker(p);
+			}
+			peasants.clear();
+		}
+		if(rushingEnemies>0){
+			for(Unit p: peasants){
+				ROUnit nearest = UnitUtils.getClosest(p, enemies);
+				p.attackUnit(nearest);
+			}
+		}
+		
+	}
+	
+	public int getArmySize(){
+		int count = 0;
+		for(Unit u: armyUnits){
+			if(u.isCompleted())
+				count++;
+		}
+		return count;
+	}
 
 	public void act(){
 		updateGroups();
 		int totalEnemyForces = scout.groundForces() + scout.airForces();
 		Set <ArmyGroup> toRemove = new HashSet<ArmyGroup>();
+		peasantRush();
 		
 		for(ArmyGroup g: marineGroups){
 			Set<Unit> bunkerUnits = new HashSet<Unit>();
@@ -224,9 +268,9 @@ public class Commander extends Overseer {
 			marineGroups.remove(g);
 		}
 		
-		if(armyUnits.size()> totalEnemyForces){
+		if(getArmySize()> totalEnemyForces){
 			for(ArmyGroup g: marineGroups){
-				if(!g.isAttacking() && g.getUnits().size() >10){
+				if(!g.isAttacking() && g.getUnits().size() >20){
 					g.setAttack(true);
 				}
 			}

@@ -5,7 +5,6 @@ import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.UnitType;
 
 public class ZergSpecialist extends Specialist {
-
 	private boolean greedy;
 	
 	public ZergSpecialist() {
@@ -14,11 +13,13 @@ public class ZergSpecialist extends Specialist {
 		airDetected = false;
 		cloakingDetected = false;
 		greedy = false;
+		noDefense = false;
 	}
 	
 	public void update() {
 		if (Game.getInstance().getFrameCount() - lastFrameObserved > LATENCY) {
 			myAlert = Alert.NONE;
+			noDefense = false;
 		} 
 		if (myAlert == Alert.NONE)
 			return;
@@ -28,8 +29,9 @@ public class ZergSpecialist extends Specialist {
 		for (ROUnit u : scout.enemyGroundUnits()) {
 			totalAttackPotential += u.getGroundWeaponDamage() / (u.getGroundWeaponCooldown()+1);
 		}
-		if (totalAttackPotential < 6 && scout.getStaticDef() < 2) {
+		if (totalAttackPotential < 6 && scout.getStaticDef() < 2 && !noDefense) {
 			myAlert = Alert.NO_DEFENSE;
+			noDefense = true;
 			Game.getInstance().printf("Opponent lacks defense, build up attack!");
 		}
 	}

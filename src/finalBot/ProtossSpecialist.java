@@ -21,6 +21,7 @@ public class ProtossSpecialist extends Specialist {
 		airDetected = false;
 		cloakingDetected = false;
 		expanded = false;
+		noDefense = false;
 	}
 	
 	@Override
@@ -28,6 +29,7 @@ public class ProtossSpecialist extends Specialist {
 		if (Game.getInstance().getFrameCount() - lastFrameObserved > LATENCY) {
 			myState = State.NONE;
 			myAlert = Alert.NONE;
+			noDefense = false;
 		}
 		if (myAlert == Alert.NONE)
 			return;
@@ -37,8 +39,9 @@ public class ProtossSpecialist extends Specialist {
 		for (ROUnit u : scout.enemyGroundUnits()) {
 			totalAttackPotential += u.getGroundWeaponDamage() / (u.getGroundWeaponCooldown()+1) / 3;
 		}
-		if (totalAttackPotential < 10 && scout.getStaticDef() < 2) {
+		if (totalAttackPotential < 10 && scout.getStaticDef() < 2 && !noDefense) {
 			myAlert = Alert.NO_DEFENSE;
+			noDefense = true;
 			Game.getInstance().printf("Opponent lacks defense, build up attack!");
 		}
 	}
@@ -48,17 +51,22 @@ public class ProtossSpecialist extends Specialist {
 		if (unit.getType() == UnitType.PROTOSS_GATEWAY) {
 			if (builder.getGameStage() == GameStage.EARLY && !rushDetected && scout.getNumberOf(UnitType.PROTOSS_GATEWAY) == 2) {
 				myState = State.ZEALOT_LIKELY;
+				myAlert = Alert.EARLY_RUSH;
 				Game.getInstance().printf("ALERT: 2 gateways detected, zealot rush likely.");
 			}
-		} else if (unit.getType() == UnitType.PROTOSS_ZEALOT && myState == State.ZEALOT_LIKELY) {
+		} else if (unit.getType() == UnitType.PROTOSS_ZEALOT && myState == State.ZEALOT_LIKELY && !rushDetected) {
 			myState = State.ZEALOT_CONFIRMED;
 			myAlert = Alert.EARLY_RUSH;
 			rushDetected = true;
 			Game.getInstance().printf("WARNING: Zealots coming, build defenses.");
-		} else if (builder.getGameStage() == GameStage.EARLY && unit.getType() == UnitType.PROTOSS_TEMPLAR_ARCHIVES) {
+		} else if (builder.getGameStage() == GameStage.EARLY && unit.getType() == UnitType.PROTOSS_TEMPLAR_ARCHIVES && !cloakingDetected) {
 			myAlert = Alert.CLOAKED_UNITS;
 			cloakingDetected = true;
 			Game.getInstance().printf("WARNING: DT rush likely!");
+		} else if (unit.getType() == UnitType.PROTOSS_DARK_TEMPLAR && !cloakingDetected) {
+			myAlert = Alert.CLOAKED_UNITS;
+			cloakingDetected = true;
+			Game.getInstance().printf("DANGER: Dark templars detected!!");
 		} else if (unit.getType() == UnitType.PROTOSS_STARGATE && !airDetected) {
 			myAlert = Alert.AIR_STRUCTURES;
 			Game.getInstance().printf("ALERT: Stargate detected; build anti-airs.");

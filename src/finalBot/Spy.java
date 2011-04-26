@@ -253,20 +253,21 @@ public class Spy extends Overseer {
 		noFuture = true;
 		
 		// retreat if there are attacking ground units
-		if(!attackingGroundUnits().isEmpty()) {
-			for(ROUnit u : attackingGroundUnits()) {
-				if(myScout.equals(u.getTarget()) || myScout.equals(u.getOrderTarget())) {
-					if(retreat) return;
-					retreat = true;
-					myScout.move(myHome);
-					return;
-				} else if(retreat) {
-					retreat = false;
-					myScout.stop();
-					return;
-				}
-			}
+		for(ROUnit u : Game.getInstance().getAllUnits()) {
+			if(Game.getInstance().self().isEnemy(u.getPlayer()) && (myScout.equals(u.getTarget()) || myScout.equals(u.getOrderTarget()))) {
+				retreat = true;
+				myScout.move(myHome);
+				return;
+			} 
 		}
+		if(retreat) {
+			retreat = false;
+			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());
+			if(target != null)
+				myScout.move(target.getLastKnownPosition());
+			return;
+		}
+		
 		
 		// stop start location scouting if buildings found
 		if(enemyBuildings() > 0)

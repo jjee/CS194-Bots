@@ -8,8 +8,7 @@ import org.bwapi.proxy.model.UnitType;
 public class TerranSpecialist extends Specialist {
 	private State myState;
 	private boolean expanded;
-	private boolean noDefense = false;
-	
+
 	private enum State {
 		NONE,
 		VULTURE_LIKELY,
@@ -23,6 +22,7 @@ public class TerranSpecialist extends Specialist {
 		airDetected = false;
 		cloakingDetected = false;
 		expanded = false;
+		noDefense = false;
 	}
 	
 	//Called on frame

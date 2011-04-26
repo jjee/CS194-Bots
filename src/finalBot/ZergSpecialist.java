@@ -14,6 +14,7 @@ public class ZergSpecialist extends Specialist {
 		airDetected = false;
 		cloakingDetected = false;
 		greedy = false;
+		noDefense = false;
 	}
 	
 	public void update() {
@@ -32,6 +33,7 @@ public class ZergSpecialist extends Specialist {
 		if (totalAttackPotential < 6 && scout.getStaticDef() < 2 && !noDefense) {
 			noDefense = true;
 			myAlert = Alert.NO_DEFENSE;
+			noDefense = true;
 			Game.getInstance().printf("Opponent lacks defense, build up attack!");
 		}
 	}

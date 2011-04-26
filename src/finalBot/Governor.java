@@ -275,7 +275,6 @@ public class Governor extends Overseer {
 		}
 	
 		//upgrades
-		boolean hasStim = me.hasResearched(TechType.STIM_PACKS);
 		boolean hasRange = me.getUpgradeLevel(UpgradeType.U_238_SHELLS) == 1;
 		boolean hasAtt = me.getUpgradeLevel(UpgradeType.TERRAN_INFANTRY_WEAPONS) == 1;
 		if(8 > units.getCount(UnitType.TERRAN_SCV) + futureAssets.getCount(UnitType.TERRAN_SCV)){
@@ -306,14 +305,7 @@ public class Governor extends Overseer {
 			if(availMinerals >= 150)
 				plan.add(new Pair<UnitType, TilePosition>(UnitType.TERRAN_ACADEMY,center.getTilePosition()));
 			availMinerals-=150;
-		} else if(academy!=null && !hasStim && !academy.isResearching()){
-			if(availMinerals >= 100 && availGas >=100 && !academy.isResearching())
-				UnitUtils.assumeControl(academy).research(TechType.STIM_PACKS);
-			if(!academy.isResearching()){
-				availMinerals-=100;
-				availGas-=100;
-			}
-		} else if(academy!=null && !hasRange && !academy.isUpgrading()){
+		}  else if(academy!=null && !hasRange && !academy.isUpgrading()){
 			if(availMinerals >= 150 && availGas >=150 && !academy.isUpgrading())
 				UnitUtils.assumeControl(academy).upgrade(UpgradeType.U_238_SHELLS);
 			if(!academy.isUpgrading()){
@@ -333,7 +325,7 @@ public class Governor extends Overseer {
 			}
 		}
 		
-		if(ebay!=null&&academy!=null&&(hasStim&&(hasAtt||ebay.isUpgrading())&&(hasRange||academy.isUpgrading())) || gasSteal){
+		if(ebay!=null&&academy!=null&&((hasAtt||ebay.isUpgrading())&&(hasRange||academy.isUpgrading())) || gasSteal){
 			gamestage = GameStage.MID;
 		}
 		

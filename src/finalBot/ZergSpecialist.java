@@ -6,6 +6,7 @@ import org.bwapi.proxy.model.UnitType;
 
 public class ZergSpecialist extends Specialist {
 	private boolean greedy;
+	private boolean noDefense = false;
 	
 	public ZergSpecialist() {
 		myAlert = Alert.NONE;
@@ -30,6 +31,7 @@ public class ZergSpecialist extends Specialist {
 			totalAttackPotential += u.getGroundWeaponDamage() / (u.getGroundWeaponCooldown()+1);
 		}
 		if (totalAttackPotential < 6 && scout.getStaticDef() < 2 && !noDefense) {
+			noDefense = true;
 			myAlert = Alert.NO_DEFENSE;
 			noDefense = true;
 			Game.getInstance().printf("Opponent lacks defense, build up attack!");

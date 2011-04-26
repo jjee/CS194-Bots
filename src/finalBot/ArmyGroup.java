@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.bwapi.proxy.model.Color;
 import org.bwapi.proxy.model.Game;
+import org.bwapi.proxy.model.Order;
 import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TilePosition;
@@ -20,10 +21,13 @@ public class ArmyGroup {
 	private boolean attacking;
 	private Position rallyPoint;
 	private boolean gathering = false;
+	private Set<Unit> positioned;
+	private int rallyDist =150;
 	
 	public ArmyGroup(){
 		units = new HashSet<Unit>();
 		attacking = false;
+		positioned = new HashSet<Unit>();
 	}
 	
 	public void setRally(Position p){ rallyPoint = p; }
@@ -86,6 +90,11 @@ public class ArmyGroup {
 		for(Unit u: units){
 			if(u.isIdle() && u.getPosition().getDistance(rallyPoint) > 300)
 				u.attackMove(rallyPoint);
+			else if (!positioned.contains(u)&&u.getPosition().getDistance(rallyPoint) <rallyDist){
+				u.rightClick(u.getPosition());
+				positioned.add(u);
+				rallyDist+=2;
+			}
 		}
 	}
 	

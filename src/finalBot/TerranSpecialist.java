@@ -8,6 +8,7 @@ import org.bwapi.proxy.model.UnitType;
 public class TerranSpecialist extends Specialist {
 	private State myState;
 	private boolean expanded;
+	private boolean noDefense = false;
 	
 	private enum State {
 		NONE,
@@ -29,6 +30,7 @@ public class TerranSpecialist extends Specialist {
 		if (Game.getInstance().getFrameCount() - lastFrameObserved > LATENCY) {
 			myState = State.NONE;
 			myAlert = Alert.NONE;
+			noDefense = false;
 		} 
 		if (myAlert == Alert.NONE)
 			return;
@@ -38,7 +40,8 @@ public class TerranSpecialist extends Specialist {
 		for (ROUnit u : scout.enemyGroundUnits()) {
 			totalAttackPotential += u.getGroundWeaponDamage() / (u.getGroundWeaponCooldown()+1) / 2;
 		}
-		if (totalAttackPotential < 10 && scout.getStaticDef() < 2) {
+		if (totalAttackPotential < 10 && scout.getStaticDef() < 2 && !noDefense) {
+			noDefense = true;
 			myAlert = Alert.NO_DEFENSE;
 			Game.getInstance().printf("Opponent lacks defense, build up attack!");
 		}

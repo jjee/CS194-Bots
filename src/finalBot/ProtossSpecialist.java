@@ -7,6 +7,7 @@ import org.bwapi.proxy.model.UnitType;
 public class ProtossSpecialist extends Specialist {
 	private State myState;
 	private boolean expanded;
+	private boolean noDefense = true;
 	
 	private enum State {
 		NONE,
@@ -28,6 +29,7 @@ public class ProtossSpecialist extends Specialist {
 		if (Game.getInstance().getFrameCount() - lastFrameObserved > LATENCY) {
 			myState = State.NONE;
 			myAlert = Alert.NONE;
+			noDefense = false;
 		}
 		if (myAlert == Alert.NONE)
 			return;
@@ -37,8 +39,9 @@ public class ProtossSpecialist extends Specialist {
 		for (ROUnit u : scout.enemyGroundUnits()) {
 			totalAttackPotential += u.getGroundWeaponDamage() / (u.getGroundWeaponCooldown()+1) / 3;
 		}
-		if (totalAttackPotential < 10 && scout.getStaticDef() < 2) {
+		if (totalAttackPotential < 10 && scout.getStaticDef() < 2 && !noDefense) {
 			myAlert = Alert.NO_DEFENSE;
+			noDefense = true;
 			Game.getInstance().printf("Opponent lacks defense, build up attack!");
 		}
 	}

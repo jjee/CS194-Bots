@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bwapi.proxy.model.Game;
+import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
 import org.bwapi.proxy.model.TechType;
 import org.bwapi.proxy.model.TilePosition;
@@ -280,8 +281,11 @@ public class Spy extends Overseer {
 		// done scouting, should try attacking if nothing to do
 		else if((myScout.isIdle() || myScout.isStopped()) && !enemyBases().isEmpty()) {
 			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());
-			if(target!=null)
-				myScout.move(target.getLastKnownPosition());
+			if(target!=null) {
+				int x = target.getLastKnownPosition().x()+((int)(Math.random()*400-200));
+				int y = target.getLastKnownPosition().y()+((int)(Math.random()*400-200));
+				myScout.move(new Position(x,y));
+			}
 		}
 		updateEnemyUnits();
 	}

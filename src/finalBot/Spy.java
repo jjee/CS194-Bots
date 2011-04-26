@@ -275,9 +275,11 @@ public class Spy extends Overseer {
 		// find enemy start location
 		if(firstScout)
 			findEnemy();
+		/*
 		// enemy found, scout nearby expansions and units
 		else if(myScout.isIdle() || myScout.isStopped())
 			scoutEnemy();
+		*/
 		// done scouting, should try attacking if nothing to do
 		else if((myScout.isIdle() || myScout.isStopped()) && !enemyBases().isEmpty()) {
 			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());

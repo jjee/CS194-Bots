@@ -173,6 +173,10 @@ public class Commander extends Overseer {
 	}
 	
 	private ROUnit getTarget(ArmyGroup g){
+		List<ROUnit> seeEnemies = Tools.enemyUnits();
+		if(seeEnemies!=null && !seeEnemies.isEmpty()){
+			return Tools.findClosest(seeEnemies, g.getLocation());
+		}
 		Set<ROUnit> enemies = scout.getEnemyUnits();
 		return Tools.findClosest(enemies, g.getLocation());
 	}

@@ -226,7 +226,7 @@ public class Spy extends Overseer {
 	public void act(){
 		scouted.add(myHome);
 		
-		if(comsat.getEnergy() >= 50){
+		if(comsat!=null && comsat.getEnergy() >= 50){
 			ROUnit target = randomEnemyBuilding();
 			ROUnit cloaked = getCloakedUnit();
 			if(cloaked!=null) target = cloaked;

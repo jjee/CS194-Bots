@@ -92,7 +92,7 @@ public class Commander extends Overseer {
 	
 	public void removeAttacker(Unit u) { //remove unit from attacker class
 		armyUnits.remove(u);
-		if(u.getType()==UnitType.TERRAN_MARINE){
+		if(u.getType()==UnitType.TERRAN_MARINE || u.getType()==UnitType.TERRAN_FIREBAT){
 			for(ArmyGroup g: marineGroups){
 				if(g.getUnits().contains(u)){
 					g.remove(u);

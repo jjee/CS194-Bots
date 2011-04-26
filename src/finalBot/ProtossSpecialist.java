@@ -48,6 +48,7 @@ public class ProtossSpecialist extends Specialist {
 		if (unit.getType() == UnitType.PROTOSS_GATEWAY) {
 			if (builder.getGameStage() == GameStage.EARLY && !rushDetected && scout.getNumberOf(UnitType.PROTOSS_GATEWAY) == 2) {
 				myState = State.ZEALOT_LIKELY;
+				myAlert = Alert.EARLY_RUSH;
 				Game.getInstance().printf("ALERT: 2 gateways detected, zealot rush likely.");
 			}
 		} else if (unit.getType() == UnitType.PROTOSS_ZEALOT && myState == State.ZEALOT_LIKELY && !rushDetected) {

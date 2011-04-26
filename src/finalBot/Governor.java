@@ -384,8 +384,6 @@ public class Governor extends Overseer {
 				}
 			}
 		}
-		
-		
 	}
 	
 	public void executePlan() {
@@ -491,11 +489,11 @@ public class Governor extends Overseer {
 			Set<ROUnit> geysers = (Set<ROUnit>) Game.getInstance().getStaticGeysers();
 			return UnitUtils.getClosest(builder.getPosition(), geysers).getTilePosition();
 		}
-		/*if(unit == UnitType.TERRAN_BUNKER){
+		if(unit == UnitType.TERRAN_BUNKER){
 			Position choke = attacker.closestChoke(naturalBase);
-			approx = new TilePosition(choke.x()*Tools.TILE_SIZE,choke.y()*Tools.TILE_SIZE);
+			approx = new TilePosition(choke.x()/Tools.TILE_SIZE,choke.y()/Tools.TILE_SIZE);
 			startDist = 0;
-		}*/
+		}
 		int numIterations = 30;
 		
 		Random rand = new Random();

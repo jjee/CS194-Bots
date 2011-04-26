@@ -50,15 +50,19 @@ public class ProtossSpecialist extends Specialist {
 				myState = State.ZEALOT_LIKELY;
 				Game.getInstance().printf("ALERT: 2 gateways detected, zealot rush likely.");
 			}
-		} else if (unit.getType() == UnitType.PROTOSS_ZEALOT && myState == State.ZEALOT_LIKELY) {
+		} else if (unit.getType() == UnitType.PROTOSS_ZEALOT && myState == State.ZEALOT_LIKELY && !rushDetected) {
 			myState = State.ZEALOT_CONFIRMED;
 			myAlert = Alert.EARLY_RUSH;
 			rushDetected = true;
 			Game.getInstance().printf("WARNING: Zealots coming, build defenses.");
-		} else if (builder.getGameStage() == GameStage.EARLY && unit.getType() == UnitType.PROTOSS_TEMPLAR_ARCHIVES) {
+		} else if (builder.getGameStage() == GameStage.EARLY && unit.getType() == UnitType.PROTOSS_TEMPLAR_ARCHIVES && !cloakingDetected) {
 			myAlert = Alert.CLOAKED_UNITS;
 			cloakingDetected = true;
 			Game.getInstance().printf("WARNING: DT rush likely!");
+		} else if (unit.getType() == UnitType.PROTOSS_DARK_TEMPLAR && !cloakingDetected) {
+			myAlert = Alert.CLOAKED_UNITS;
+			cloakingDetected = true;
+			Game.getInstance().printf("DANGER: Dark templars detected!!");
 		} else if (unit.getType() == UnitType.PROTOSS_STARGATE && !airDetected) {
 			myAlert = Alert.AIR_STRUCTURES;
 			Game.getInstance().printf("ALERT: Stargate detected; build anti-airs.");

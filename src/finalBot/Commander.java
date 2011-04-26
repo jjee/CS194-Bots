@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.bwapi.proxy.model.Bwta;
 import org.bwapi.proxy.model.Chokepoint;
+import org.bwapi.proxy.model.Color;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Order;
 import org.bwapi.proxy.model.Player;
@@ -126,18 +127,18 @@ public class Commander extends Overseer {
 	
 	private void heal(){
 		for(Unit c : medics.keySet()){
-			if(medics.get(c)==null || !medics.get(c).exists()){
+			if(medics.get(c)==null || !medics.get(c).isVisible()){
 				medics.put(c, healTarget());
 			}
-			if(medics.get(c)==null || !medics.get(c).exists()){
+			if(medics.get(c)==null || !medics.get(c).isVisible()){
 				if(c.isIdle()){
 					c.rightClick(builder.getHome());
 				}
 				return;
 			}
-			if(5 < c.getTilePosition().getDistance(medics.get(c).getTilePosition())){
+			if(3 < c.getTilePosition().getDistance(medics.get(c).getTilePosition())){
 				c.rightClick(medics.get(c).getTilePosition());
-				//System.out.println(medics.get(c).getTilePosition());
+				Game.getInstance().drawLineMap(c.getPosition(), medics.get(c).getPosition(), Color.BLUE);
 			}
 		}
 	}
@@ -273,7 +274,7 @@ public class Commander extends Overseer {
 		}
 		
 		for(ArmyGroup g: marineGroups){
-			if(!g.isAttacking() && g.getUnits().size() >20){
+			if(!g.isAttacking() && g.getUnits().size() >=20){
 				g.setAttack(true);
 			}
 			

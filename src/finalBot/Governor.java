@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.bwapi.proxy.model.Bwta;
 import org.bwapi.proxy.model.Color;
 import org.bwapi.proxy.model.Game;
 import org.bwapi.proxy.model.Player;
 import org.bwapi.proxy.model.Position;
 import org.bwapi.proxy.model.ROUnit;
+import org.bwapi.proxy.model.Region;
 import org.bwapi.proxy.model.TechType;
 import org.bwapi.proxy.model.TilePosition;
 import org.bwapi.proxy.model.Unit;
@@ -36,6 +38,7 @@ public class Governor extends Overseer {
 	private final int REBUILD_TIME = 30;
 	private ROUnit naturalBase;
 	private ConvexHull miningArea;
+	private ConvexHull myArea;
 	private boolean rushDetect = false, cloakDetect = false, airDetect = false;
 	private boolean rushDealt = false, cloakDealt = false, airDealt = false;
 	private boolean scan = false;
@@ -74,6 +77,12 @@ public class Governor extends Overseer {
 		Set<ROUnit> geysers = (Set<ROUnit>) Game.getInstance().getStaticGeysers();
 		vertices.add(Tools.findClosest(geysers,naturalBase.getPosition()).getPosition());	
 		miningArea = new ConvexHull(vertices);
+		Set<Region> regions = Bwta.getInstance().getRegions();
+		for(Region r: regions){
+			ConvexHull temp = new ConvexHull(r.getPolygon().getVertices());
+			if(temp.withinHull(naturalBase.getPosition()))
+				myArea = temp;
+		}
 	}
 	
 	//TODO
@@ -495,8 +504,8 @@ public class Governor extends Overseer {
 				int x = rand.nextInt(2*buildDistance)-buildDistance;
 				int y = rand.nextInt(2*buildDistance)-buildDistance;
 				TilePosition pos = new TilePosition(approx.x()+x, approx.y()+y);
-				//TilePosition add_pos = new TilePosition(approx.x()+x+2, approx.y()+y+1);
-				if(!miningArea.withinHull(new Position(pos.x()*Tools.TILE_SIZE,pos.y()*Tools.TILE_SIZE))&&
+				Position position = new Position(pos.x()*Tools.TILE_SIZE,pos.y()*Tools.TILE_SIZE);
+				if(!miningArea.withinHull(position)&& myArea.withinHull(position) &&
 						builder.canBuildHere(pos, unit) && Game.getInstance().isVisible(pos)){
 					return pos;
 				}
@@ -620,6 +629,7 @@ public class Governor extends Overseer {
 		gas();
 		mine();
 		miningArea.draw();
+		myArea.draw();
 	}
 	
 	public GameStage getGameStage() {

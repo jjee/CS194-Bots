@@ -205,12 +205,33 @@ public class Spy extends Overseer {
 		return 0;
 	}
 	
+	private ROUnit randomEnemyBuilding() {
+		List<ROUnit> enemyBuildings = new LinkedList<ROUnit>();
+		for(ROUnit u : enemyUnits) {
+			if(u.getType().isBuilding())
+				enemyBuildings.add(u);
+		}
+		return enemyBuildings.get((int) (Math.random()*enemyBuildings.size()));
+	}
+	
+	public ROUnit getCloakedUnit(){
+		List<ROUnit> enemies = Tools.enemyUnits();
+		for(ROUnit e: enemies){
+			if(e.isCloaked())
+				return e;
+		}
+		return null;
+	}
+	
 	public void act(){
 		scouted.add(myHome);
 		
-		if(comsat != null) {
-			if(!enemyBases().isEmpty())
-				comsat.useTech(TechType.SCANNER_SWEEP,enemyBases().get(0).getPosition());
+		if(comsat.getEnergy() >= 50){
+			ROUnit target = randomEnemyBuilding();
+			ROUnit cloaked = getCloakedUnit();
+			if(cloaked!=null) target = cloaked;
+			if(target!=null)
+				comsat.useTech(TechType.SCANNER_SWEEP,target.getLastKnownPosition());
 		}
 		
 		// grab new scout if scout died or have no scout

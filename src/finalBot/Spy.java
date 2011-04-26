@@ -144,6 +144,15 @@ public class Spy extends Overseer {
 		return enemyUnits;
 	}
 	
+	public ROUnit getCloakedUnit(){
+		List<ROUnit> enemies = Tools.enemyUnits();
+		for(ROUnit e: enemies){
+			if(e.isCloaked())
+				return e;
+		}
+		return null;
+	}
+	
 	// enemy armed air unit count
 	public int airForces() {
 		int airUnits = 0;
@@ -207,10 +216,15 @@ public class Spy extends Overseer {
 	
 	public void act(){
 		scouted.add(myHome);
-		
+		updateEnemyUnits();
 		if(comsat != null) {
-			if(!enemyBases().isEmpty())
-				comsat.useTech(TechType.SCANNER_SWEEP,enemyBases().get(0).getPosition());
+			if(comsat.getEnergy() >= 50){
+				ROUnit target = randomEnemyBuilding();
+				ROUnit cloaked = getCloakedUnit();
+				if(cloaked!=null) target = cloaked;
+				if(target!=null)
+					comsat.useTech(TechType.SCANNER_SWEEP,target.getLastKnownPosition());
+			}
 		}
 		
 		// grab new scout if scout died or have no scout
@@ -229,7 +243,7 @@ public class Spy extends Overseer {
 		}
 		
 		noFuture = true;
-		
+		/*
 		// retreat if there are attacking ground units
 		if(!attackingGroundUnits().isEmpty()) {
 			int maxAtkRange = maxAttackingGroundRange();
@@ -244,7 +258,7 @@ public class Spy extends Overseer {
 				return;
 			}
 		}
-		
+		*/
 		// stop start location scouting if buildings found
 		if(enemyBuildings() > 0)
 			firstScout = false;
@@ -252,10 +266,12 @@ public class Spy extends Overseer {
 		// find enemy start location
 		if(firstScout)
 			findEnemy();
+		/*
 		// enemy found, scout nearby expansions and units
 		else if(myScout.isIdle() || myScout.isStopped())
 			scoutEnemy();
-		// done scouting, should try attacking if nothing to do
+		*/
+		// done scouting, should try moving to enemy base if nothing to do
 		else if((myScout.isIdle() || myScout.isStopped()) && !enemyBases().isEmpty()) {
 			ROUnit target = Tools.findClosest(enemyBases(),myScout.getTilePosition());
 			if(target!=null)
@@ -272,6 +288,15 @@ public class Spy extends Overseer {
 				buildings++;
 		}
 		return buildings;
+	}
+	
+	private ROUnit randomEnemyBuilding() {
+		List<ROUnit> enemyBuildings = new LinkedList<ROUnit>();
+		for(ROUnit u : enemyUnits) {
+			if(u.getType().isBuilding())
+				enemyBuildings.add(u);
+		}
+		return enemyBuildings.get((int) (Math.random()*enemyBuildings.size()));
 	}
 	
 	// list of units on ground, includes both buildings and forces

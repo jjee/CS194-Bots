@@ -85,7 +85,7 @@ public class ArmyGroup {
 		if(rallyPoint==null) return;
 		for(Unit u: units){
 			if(u.isIdle() && u.getPosition().getDistance(rallyPoint) > 300)
-				u.rightClick(rallyPoint);
+				u.attackMove(rallyPoint);
 		}
 	}
 	

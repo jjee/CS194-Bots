@@ -28,6 +28,7 @@ public class Spy extends Overseer {
 	private boolean retreat;
 	private boolean firstScout;
 	private boolean noFuture;
+	private boolean saveScan = false;
 	
 	public Spy() {
 		scouted = new HashSet<TilePosition>();
@@ -212,13 +213,14 @@ public class Spy extends Overseer {
 			if(u.getType().isBuilding())
 				enemyBuildings.add(u);
 		}
+		if(enemyBuildings.isEmpty()) return null;
 		return enemyBuildings.get((int) (Math.random()*enemyBuildings.size()));
 	}
 	
 	public ROUnit getCloakedUnit(){
 		List<ROUnit> enemies = Tools.enemyUnits();
 		for(ROUnit e: enemies){
-			if(e.isCloaked())
+			if(e.isCloaked()&&!e.isDetected())
 				return e;
 		}
 		return null;
@@ -226,12 +228,15 @@ public class Spy extends Overseer {
 	
 	public void act(){
 		scouted.add(myHome);
+		if(specialist.getAlert()==Alert.CLOAKED_UNITS)
+			saveScan = true;
 		
 		if(comsat!=null && comsat.getEnergy() >= 50){
 			ROUnit target = randomEnemyBuilding();
 			ROUnit cloaked = getCloakedUnit();
 			if(cloaked!=null) target = cloaked;
-			if(target!=null)
+			
+			if((!saveScan && target!=null) || cloaked!=null)
 				comsat.useTech(TechType.SCANNER_SWEEP,target.getLastKnownPosition());
 		}
 		

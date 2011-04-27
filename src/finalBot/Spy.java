@@ -220,7 +220,7 @@ public class Spy extends Overseer {
 	public ROUnit getCloakedUnit(){
 		List<ROUnit> enemies = Tools.enemyUnits();
 		for(ROUnit e: enemies){
-			if(e.isCloaked())
+			if(e.isCloaked()&&!e.isDetected())
 				return e;
 		}
 		return null;

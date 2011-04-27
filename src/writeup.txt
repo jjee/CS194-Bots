@@ -1,0 +1,8 @@
+Our bot basically builds enough marines, firebats, and medics, and push. We roughly build 4:1 marines to medics and 2:1 marines to firebats. We try to get up to 6 barracks, building supply depots slightly before we run out of supply (estimating based on number of barracks). Some buildings like the academy, engineering bay and refinery are delayed if we think there might be a rush and we build bunkers. Turrets are built when we believe there might be cloaked or air units. 
+
+To scout, we send an SCV at the beginning. When an enemy base is found, it just hangs around until it's being targeted. Once we get a comsat station, we also use that to scan their base.
+
+What we react to:
+Possible rush: Build bunker(s)
+Air units/something that builds air units: Build some turrets
+Cloak/some things that might build cloaked: Build some turrets and save comsat scan energy for cloaked units
